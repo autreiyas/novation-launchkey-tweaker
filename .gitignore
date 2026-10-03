@@ -16,3 +16,5 @@ __pycache__/
 
 # Claude Code
 .claude/
+SESSION_HANDOFF.md
+CLAUDE.md
