@@ -1,6 +1,7 @@
 import SwiftUI
+import CoreGraphics
+import ApplicationServices
 
-@main
 struct TweakerApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 

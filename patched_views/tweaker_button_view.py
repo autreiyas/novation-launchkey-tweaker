@@ -29,16 +29,6 @@ SHIFT_BUTTONS = {
     "shift_loop": "ShiftLoop",
     "shift_capture_midi": "ShiftCaptureMidi",
     "shift_quantise": "ShiftQuantise",
-    # Faders
-    "shift_fader_1": "ShiftFader1",
-    "shift_fader_2": "ShiftFader2",
-    "shift_fader_3": "ShiftFader3",
-    "shift_fader_4": "ShiftFader4",
-    "shift_fader_5": "ShiftFader5",
-    "shift_fader_6": "ShiftFader6",
-    "shift_fader_7": "ShiftFader7",
-    "shift_fader_8": "ShiftFader8",
-    "shift_arm_select": "ShiftArmSelect",
     # Navigation
     "shift_encoder_page_up": "ShiftEncoderPageUp",
     "shift_encoder_page_down": "ShiftEncoderPageDown",
@@ -58,7 +48,8 @@ def _run_gt(command_name):
     """Run a globalTransport command by midi module attribute name."""
     cmd = _gt(command_name)
     if cmd is not None:
-        transport.globalTransport(cmd, 1, midi.PME_System)
+        result = transport.globalTransport(cmd, 1, midi.PME_System, midi.GT_All)
+        print("[Tweaker] globalTransport(%s=%d) -> %s" % (command_name, cmd, result))
     else:
         print("[Tweaker] midi.%s not found" % command_name)
 
@@ -70,7 +61,7 @@ def _execute_action(fl, action_name, params=None):
 
     print("[Tweaker] action: %s" % action_name)
 
-    # --- Direct FL wrapper methods (no globalTransport needed) ---
+    # --- Direct FL wrapper methods ---
     if action_name == "tap_tempo":
         fl.send_tap_tempo_event()
     elif action_name == "toggle_metronome":
@@ -93,10 +84,22 @@ def _execute_action(fl, action_name, params=None):
         fl.ui.focus_channel_window()
     elif action_name == "focus_playlist":
         fl.ui.focus_playlist_window()
-
-    # --- globalTransport commands (use midi module constants) ---
     elif action_name == "toggle_pat_song":
         transport.setLoopMode()
+
+    # --- Clipboard / editing ---
+    elif action_name == "copy":
+        _run_gt("FPT_Copy")
+    elif action_name == "cut":
+        _run_gt("FPT_Cut")
+    elif action_name == "paste":
+        _run_gt("FPT_Paste")
+    elif action_name == "delete":
+        _run_gt("FPT_Delete")
+    elif action_name == "insert":
+        _run_gt("FPT_Insert")
+
+    # --- globalTransport commands (FPT_ constants) ---
     elif action_name == "save":
         _run_gt("FPT_Save")
     elif action_name == "save_new":
@@ -115,19 +118,65 @@ def _execute_action(fl, action_name, params=None):
         _run_gt("FPT_Shuffle")
     elif action_name == "next_window":
         _run_gt("FPT_NextWindow")
+    elif action_name == "toggle_browser":
+        ui.navigateBrowser(0, 0)
+    elif action_name == "open_menu":
+        _run_gt("FPT_Menu")
+    # F-keys (FL Studio shortcuts via API)
+    elif action_name == "f1":
+        _run_gt("FPT_F1")
+    elif action_name == "f2":
+        _run_gt("FPT_F2")
+    elif action_name == "f3":
+        _run_gt("FPT_F3")
+    elif action_name == "f4":
+        _run_gt("FPT_F4")
+    elif action_name == "f5":
+        _run_gt("FPT_F5")
+    elif action_name == "f6":
+        _run_gt("FPT_F6")
+    elif action_name == "f7":
+        _run_gt("FPT_F7")
+    elif action_name == "f8":
+        _run_gt("FPT_F8")
+    elif action_name == "f9":
+        _run_gt("FPT_F9")
+    elif action_name == "f10":
+        _run_gt("FPT_F10")
+    elif action_name == "f11":
+        _run_gt("FPT_F11")
+    elif action_name == "f12":
+        _run_gt("FPT_F12")
+    elif action_name == "nudge_plus":
+        _run_gt("FPT_NudgePlus")
+    elif action_name == "nudge_minus":
+        _run_gt("FPT_NudgeMinus")
+    elif action_name == "punch_in":
+        _run_gt("FPT_PunchIn")
+    elif action_name == "punch_out":
+        _run_gt("FPT_PunchOut")
+    elif action_name == "mute":
+        _run_gt("FPT_Mute")
+    elif action_name == "toggle_wait_for_input":
+        _run_gt("FPT_WaitForInput")
 
     elif action_name == "custom_keystroke":
         if params:
             key = params.get("key", "")
             modifiers = params.get("modifiers", [])
             if key:
-                try:
-                    from patched_views.keystroke_sender import send_keystroke
-                    result = send_keystroke(key, modifiers)
-                    if not result:
-                        print("[Tweaker] keystroke failed for key=%r mods=%r" % (key, modifiers))
-                except Exception as e:
-                    print("[Tweaker] keystroke error: %s" % e)
+                # Build keystroke_helper command with stderr log
+                helper = os.path.expanduser("~/.tweaker/keystroke_helper")
+                log = os.path.expanduser("~/.tweaker/keystroke.log")
+                mod_str = ",".join(m.lower() for m in modifiers) if modifiers else ""
+                if mod_str:
+                    cmd = "%s %s %s 2>>%s" % (helper, key.lower(), mod_str, log)
+                else:
+                    cmd = "%s %s 2>>%s" % (helper, key.lower(), log)
+                # Also write a test file to prove os.system runs
+                os.system("echo '%s' >> %s" % (cmd, os.path.expanduser("~/.tweaker/commands.log")))
+                print("[Tweaker] running: %s" % cmd)
+                os.system(cmd)
 
     else:
         print("[Tweaker] unknown action: %s" % action_name)

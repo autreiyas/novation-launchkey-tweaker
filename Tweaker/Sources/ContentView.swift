@@ -678,48 +678,67 @@ struct ButtonMappingCard: View {
 
     private var buttonFunctionPicker: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 2) {
-                ForEach(availableFunctions) { fn in
-                    Button(action: {
-                        if fn == .customKeystroke {
-                            viewModel.config.setButtonFunction(fn, for: button.configKey,
-                                                                keystrokeKey: keystrokeKey.isEmpty ? nil : keystrokeKey,
-                                                                keystrokeModifiers: keystrokeMods.isEmpty ? nil : Array(keystrokeMods))
-                        } else {
-                            viewModel.config.setButtonFunction(fn, for: button.configKey)
+            VStack(alignment: .leading, spacing: 4) {
+                // "Not Used" first, outside categories
+                functionRow(.notUsed)
+
+                ForEach(ButtonFunctionCategory.allCases, id: \.rawValue) { category in
+                    let fns = availableFunctions.filter { $0 != .notUsed && $0.category == category }
+                    if !fns.isEmpty {
+                        Text(category.rawValue)
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(t.textMuted)
+                            .padding(.horizontal, 12)
+                            .padding(.top, 6)
+                            .padding(.bottom, 2)
+
+                        ForEach(fns) { fn in
+                            functionRow(fn)
                         }
-                        viewModel.markDirty()
-                        showingPicker = false
-                    }) {
-                        HStack(spacing: 10) {
-                            Image(systemName: fn.icon)
-                                .font(.system(size: 12))
-                                .frame(width: 18)
-                                .foregroundStyle(fn == currentFunction ? t.accent : .secondary)
-
-                            Text(fn.displayName)
-                                .font(.system(size: 13))
-                                .foregroundStyle(fn == currentFunction ? t.accent : .primary)
-
-                            Spacer()
-
-                            if fn == currentFunction {
-                                Image(systemName: "checkmark")
-                                    .font(.system(size: 11, weight: .bold))
-                                    .foregroundStyle(t.accent)
-                            }
-                        }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 7)
-                        .background(fn == currentFunction ? t.accent.opacity(0.1) : Color.clear)
-                        .clipShape(RoundedRectangle(cornerRadius: 6))
                     }
-                    .buttonStyle(.plain)
                 }
             }
             .padding(8)
         }
-        .frame(width: 220, height: 350)
+        .frame(width: 220, height: 400)
+    }
+
+    private func functionRow(_ fn: ButtonFunction) -> some View {
+        Button(action: {
+            if fn == .customKeystroke {
+                viewModel.config.setButtonFunction(fn, for: button.configKey,
+                                                    keystrokeKey: keystrokeKey.isEmpty ? nil : keystrokeKey,
+                                                    keystrokeModifiers: keystrokeMods.isEmpty ? nil : Array(keystrokeMods))
+            } else {
+                viewModel.config.setButtonFunction(fn, for: button.configKey)
+            }
+            viewModel.markDirty()
+            showingPicker = false
+        }) {
+            HStack(spacing: 10) {
+                Image(systemName: fn.icon)
+                    .font(.system(size: 12))
+                    .frame(width: 18)
+                    .foregroundStyle(fn == currentFunction ? t.accent : .secondary)
+
+                Text(fn.displayName)
+                    .font(.system(size: 13))
+                    .foregroundStyle(fn == currentFunction ? t.accent : .primary)
+
+                Spacer()
+
+                if fn == currentFunction {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(t.accent)
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 7)
+            .background(fn == currentFunction ? t.accent.opacity(0.1) : Color.clear)
+            .clipShape(RoundedRectangle(cornerRadius: 6))
+        }
+        .buttonStyle(.plain)
     }
 }
 

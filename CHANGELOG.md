@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.0.5
+
+### Added
+- Native FL Studio API actions: Copy, Cut, Paste, Delete, Insert, Nudge +/-, Punch In/Out, Mute, Wait for Input
+- Button function picker now grouped by category (Transport, Editing, Windows, Navigation, Other)
+- Keystroke mode built into Tweaker.app (`--keystroke` CLI flag) — no separate helper binary needed
+
+### Removed
+- Fader select buttons from shift mapping — Shift+Fader is used by stock firmware for fader mode switching
+
+### Changed
+- Custom keystrokes now use Tweaker.app's built-in CGEvents instead of external helper binary
+
 ## 1.0.4
 
 ### Added

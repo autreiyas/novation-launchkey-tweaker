@@ -103,32 +103,92 @@ enum KnobFunction: String, CaseIterable, Identifiable, Codable {
 
 // MARK: - Shift button function definitions
 
+enum ButtonFunctionCategory: String, CaseIterable {
+    case transport = "Transport"
+    case editing = "Editing"
+    case windows = "Windows"
+    case navigation = "Navigation"
+    case other = "Other"
+}
+
 enum ButtonFunction: String, CaseIterable, Identifiable, Codable {
     case notUsed = "not_used"
+    // Transport
     case togglePatSong = "toggle_pat_song"
     case tapTempo = "tap_tempo"
     case toggleMetronome = "toggle_metronome"
     case toggleLoopRecord = "toggle_loop_record"
-    case undo = "undo"
-    case redo = "redo"
-    case openPluginPicker = "open_plugin_picker"
-    case save = "save"
-    case saveNew = "save_new"
-    case toggleSnap = "toggle_snap"
-    case addMarker = "add_marker"
-    case toggleStepEdit = "toggle_step_edit"
     case toggleCountdown = "toggle_countdown"
     case toggleOverdub = "toggle_overdub"
+    case toggleWaitForInput = "toggle_wait_for_input"
+    case punchIn = "punch_in"
+    case punchOut = "punch_out"
+    // Editing
+    case undo = "undo"
+    case redo = "redo"
+    case copy = "copy"
+    case cut = "cut"
+    case paste = "paste"
+    case delete = "delete"
+    case insert = "insert"
+    case toggleSnap = "toggle_snap"
+    case toggleStepEdit = "toggle_step_edit"
     case toggleShuffle = "toggle_shuffle"
+    case nudgePlus = "nudge_plus"
+    case nudgeMinus = "nudge_minus"
     case clonePattern = "clone_pattern"
-    case toggleMasterSync = "toggle_master_sync"
+    case mute = "mute"
+    // Windows & Browser
+    case openPluginPicker = "open_plugin_picker"
     case nextWindow = "next_window"
     case focusMixer = "focus_mixer"
     case focusChannelRack = "focus_channel_rack"
     case focusPlaylist = "focus_playlist"
+    case toggleBrowser = "toggle_browser"
+    case openMenu = "open_menu"
+    // F-Keys (FL Studio shortcuts)
+    case f1 = "f1"
+    case f2 = "f2"
+    case f3 = "f3"
+    case f4 = "f4"
+    case f5 = "f5"
+    case f6 = "f6"
+    case f7 = "f7"
+    case f8 = "f8"
+    case f9 = "f9"
+    case f10 = "f10"
+    case f11 = "f11"
+    case f12 = "f12"
+    // Navigation
+    case addMarker = "add_marker"
+    // Other
+    case save = "save"
+    case saveNew = "save_new"
+    case toggleMasterSync = "toggle_master_sync"
     case customKeystroke = "custom_keystroke"
 
     var id: String { rawValue }
+
+    var category: ButtonFunctionCategory {
+        switch self {
+        case .notUsed: return .other
+        case .togglePatSong, .tapTempo, .toggleMetronome, .toggleLoopRecord,
+             .toggleCountdown, .toggleOverdub, .toggleWaitForInput, .punchIn, .punchOut:
+            return .transport
+        case .undo, .redo, .copy, .cut, .paste, .delete, .insert,
+             .toggleSnap, .toggleStepEdit, .toggleShuffle, .nudgePlus, .nudgeMinus,
+             .clonePattern, .mute:
+            return .editing
+        case .openPluginPicker, .nextWindow, .focusMixer, .focusChannelRack, .focusPlaylist,
+             .toggleBrowser, .openMenu,
+             .f1, .f2, .f3, .f4, .f5, .f6, .f7, .f8, .f9, .f10, .f11, .f12:
+            return .windows
+        case .addMarker:
+            return .navigation
+        case .save, .saveNew, .toggleMasterSync, .customKeystroke:
+            return .other
+        }
+    }
 
     var displayName: String {
         switch self {
@@ -137,23 +197,48 @@ enum ButtonFunction: String, CaseIterable, Identifiable, Codable {
         case .tapTempo: return "Tap Tempo"
         case .toggleMetronome: return "Metronome"
         case .toggleLoopRecord: return "Loop Record"
-        case .undo: return "Undo"
-        case .redo: return "Redo"
-        case .openPluginPicker: return "Plugin Picker"
-        case .save: return "Save"
-        case .saveNew: return "Save As"
-        case .toggleSnap: return "Snap On/Off"
-        case .addMarker: return "Add Marker"
-        case .toggleStepEdit: return "Step Edit"
         case .toggleCountdown: return "Countdown"
         case .toggleOverdub: return "Overdub"
+        case .toggleWaitForInput: return "Wait for Input"
+        case .punchIn: return "Punch In"
+        case .punchOut: return "Punch Out"
+        case .undo: return "Undo"
+        case .redo: return "Redo"
+        case .copy: return "Copy"
+        case .cut: return "Cut"
+        case .paste: return "Paste"
+        case .delete: return "Delete"
+        case .insert: return "Insert"
+        case .toggleSnap: return "Snap On/Off"
+        case .toggleStepEdit: return "Step Edit"
         case .toggleShuffle: return "Shuffle"
+        case .nudgePlus: return "Nudge +"
+        case .nudgeMinus: return "Nudge -"
         case .clonePattern: return "Clone Pattern"
-        case .toggleMasterSync: return "Master Sync"
+        case .mute: return "Mute"
+        case .openPluginPicker: return "Plugin Picker"
         case .nextWindow: return "Next Window"
         case .focusMixer: return "Focus Mixer"
         case .focusChannelRack: return "Focus Channel Rack"
         case .focusPlaylist: return "Focus Playlist"
+        case .toggleBrowser: return "Toggle Browser"
+        case .openMenu: return "Open Menu"
+        case .f1: return "F1 — Help"
+        case .f2: return "F2 — Rename"
+        case .f3: return "F3 — Find"
+        case .f4: return "F4 — Next Empty Pat"
+        case .f5: return "F5 — Playlist"
+        case .f6: return "F6 — Channel Rack"
+        case .f7: return "F7 — Piano Roll"
+        case .f8: return "F8 — Plugin Picker"
+        case .f9: return "F9 — Mixer"
+        case .f10: return "F10 — MIDI Settings"
+        case .f11: return "F11 — Song Info"
+        case .f12: return "F12 — Close All"
+        case .addMarker: return "Add Marker"
+        case .save: return "Save"
+        case .saveNew: return "Save As"
+        case .toggleMasterSync: return "Master Sync"
         case .customKeystroke: return "Custom Keystroke"
         }
     }
@@ -165,23 +250,48 @@ enum ButtonFunction: String, CaseIterable, Identifiable, Codable {
         case .tapTempo: return "hand.tap"
         case .toggleMetronome: return "metronome"
         case .toggleLoopRecord: return "arrow.triangle.2.circlepath"
-        case .undo: return "arrow.uturn.backward"
-        case .redo: return "arrow.uturn.forward"
-        case .openPluginPicker: return "square.grid.2x2"
-        case .save: return "square.and.arrow.down"
-        case .saveNew: return "square.and.arrow.down.on.square"
-        case .toggleSnap: return "arrow.right.to.line"
-        case .addMarker: return "bookmark.fill"
-        case .toggleStepEdit: return "pianokeys"
         case .toggleCountdown: return "timer"
         case .toggleOverdub: return "waveform.badge.plus"
+        case .toggleWaitForInput: return "clock.badge.questionmark"
+        case .punchIn: return "arrow.right.to.line.compact"
+        case .punchOut: return "arrow.left.to.line.compact"
+        case .undo: return "arrow.uturn.backward"
+        case .redo: return "arrow.uturn.forward"
+        case .copy: return "doc.on.doc"
+        case .cut: return "scissors"
+        case .paste: return "doc.on.clipboard"
+        case .delete: return "trash"
+        case .insert: return "plus.rectangle"
+        case .toggleSnap: return "arrow.right.to.line"
+        case .toggleStepEdit: return "pianokeys"
         case .toggleShuffle: return "shuffle"
-        case .clonePattern: return "doc.on.doc"
-        case .toggleMasterSync: return "link"
+        case .nudgePlus: return "plus.circle"
+        case .nudgeMinus: return "minus.circle"
+        case .clonePattern: return "plus.square.on.square"
+        case .mute: return "speaker.slash"
+        case .openPluginPicker: return "square.grid.2x2"
         case .nextWindow: return "macwindow.on.rectangle"
         case .focusMixer: return "slider.horizontal.3"
         case .focusChannelRack: return "rectangle.split.3x1"
         case .focusPlaylist: return "list.bullet.rectangle"
+        case .toggleBrowser: return "sidebar.left"
+        case .openMenu: return "filemenu.and.selection"
+        case .f1: return "questionmark.circle"
+        case .f2: return "character.cursor.ibeam"
+        case .f3: return "magnifyingglass"
+        case .f4: return "plus.square"
+        case .f5: return "list.bullet.rectangle"
+        case .f6: return "rectangle.split.3x1"
+        case .f7: return "pianokeys"
+        case .f8: return "square.grid.2x2"
+        case .f9: return "slider.horizontal.3"
+        case .f10: return "gear"
+        case .f11: return "info.circle"
+        case .f12: return "xmark.square"
+        case .addMarker: return "bookmark.fill"
+        case .save: return "square.and.arrow.down"
+        case .saveNew: return "square.and.arrow.down.on.square"
+        case .toggleMasterSync: return "link"
         case .customKeystroke: return "keyboard"
         }
     }
@@ -217,19 +327,6 @@ struct ShiftButtonGroup: Identifiable {
         ShiftButton(configKey: "shift_metronome", displayName: "Shift + Metronome", shortName: "Metronome", icon: "metronome", isStock: false, stockFunction: nil),
     ])
 
-    // Fader select buttons: 1 row × 8 + arm/select
-    static let faders = ShiftButtonGroup(name: "Fader Select", icon: "slider.vertical.3", buttons: [
-        ShiftButton(configKey: "shift_fader_1", displayName: "Shift + Fader 1", shortName: "1", icon: "1.circle", isStock: false, stockFunction: nil),
-        ShiftButton(configKey: "shift_fader_2", displayName: "Shift + Fader 2", shortName: "2", icon: "2.circle", isStock: false, stockFunction: nil),
-        ShiftButton(configKey: "shift_fader_3", displayName: "Shift + Fader 3", shortName: "3", icon: "3.circle", isStock: false, stockFunction: nil),
-        ShiftButton(configKey: "shift_fader_4", displayName: "Shift + Fader 4", shortName: "4", icon: "4.circle", isStock: false, stockFunction: nil),
-        ShiftButton(configKey: "shift_fader_5", displayName: "Shift + Fader 5", shortName: "5", icon: "5.circle", isStock: false, stockFunction: nil),
-        ShiftButton(configKey: "shift_fader_6", displayName: "Shift + Fader 6", shortName: "6", icon: "6.circle", isStock: false, stockFunction: nil),
-        ShiftButton(configKey: "shift_fader_7", displayName: "Shift + Fader 7", shortName: "7", icon: "7.circle", isStock: false, stockFunction: nil),
-        ShiftButton(configKey: "shift_fader_8", displayName: "Shift + Fader 8", shortName: "8", icon: "8.circle", isStock: false, stockFunction: nil),
-        ShiftButton(configKey: "shift_arm_select", displayName: "Shift + Arm/Sel", shortName: "Arm/Sel", icon: "circle.circle", isStock: false, stockFunction: nil),
-    ])
-
     // Navigation buttons — stacked up/down pairs: Track (stock), Pads, Enc
     static let navigation = ShiftButtonGroup(name: "Navigation", icon: "arrow.left.arrow.right", buttons: [
         // Column 1: Track (stock)
@@ -244,7 +341,7 @@ struct ShiftButtonGroup: Identifiable {
         ShiftButton(configKey: "shift_encoder_page_down", displayName: "Shift + Enc \u{25BC}", shortName: "Enc \u{25BC}", icon: "chevron.down", isStock: false, stockFunction: nil),
     ])
 
-    static let allGroups: [ShiftButtonGroup] = [transport, faders, navigation]
+    static let allGroups: [ShiftButtonGroup] = [transport, navigation]
 }
 
 // MARK: - Button mapping model
