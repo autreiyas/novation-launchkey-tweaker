@@ -38,44 +38,75 @@ Available actions include native FL Studio API calls (Toggle Pat/Song, Save, Und
 
 ### Custom Keystrokes
 
-Send any macOS keyboard shortcut from a shift button press. Works around FL Studio's sandboxed Python by queuing commands during MIDI callbacks and flushing them via a background keystroke server during OnIdle. See [docs/custom-keystrokes.md](docs/custom-keystrokes.md) for technical details.
+Send any macOS keyboard shortcut from a shift button press — including combos like Cmd+Shift+R to export. A background keystroke server handles delivery via macOS CGEvents. See [docs/custom-keystrokes.md](docs/custom-keystrokes.md) for technical details.
+
+## Requirements
+
+- macOS (tested on Tahoe / macOS 26)
+- FL Studio with Novation Launchkey MK4 scripts installed
+- Works with all MK4 sizes (25/37/49/61/88)
+
+No Xcode or developer tools required — pre-built binaries are included.
 
 ## Installation
 
+### 1. Clone the repo
+
 ```bash
-chmod +x install.sh restore.sh
-
-# Install the patch (backs up originals automatically)
-./install.sh
-
-# Restart FL Studio (one time only)
+git clone https://github.com/autreiyas/novation-launchkey-tweaker.git
+cd novation-launchkey-tweaker
 ```
 
-The installer handles everything: patched scripts, config files, keystroke server binary, and LaunchAgent setup.
+### 2. Run the installer
 
-### Custom Keystroke Setup
+```bash
+chmod +x install.sh restore.sh
+./install.sh
+```
 
-If you want to use custom keystrokes (e.g., Cmd+Shift+R for export):
+The installer automatically:
+- Backs up original Novation script files (first run only)
+- Installs patched transport views, button handlers, and config loader
+- Installs the keystroke server binary to `~/.tweaker/`
+- Sets up a LaunchAgent so the keystroke server starts on login
+- Preserves your existing `tweaker_config.json` if present
+- Clears Python bytecode cache to prevent stale script issues
 
-1. Run `./install.sh` (installs and starts the keystroke server)
-2. Open **System Settings → Privacy & Security → Accessibility**
-3. Click **+**, press **Cmd+Shift+G**, paste `~/.tweaker/tweaker_keystroke_server`
-4. Toggle it **on**
-5. Set `enable_custom_keystrokes` to `true` in Tweaker.app
-6. Assign a button to **Custom Keystroke** and configure the key/modifiers
+### 3. Restart FL Studio
+
+FL Studio needs one restart to load the patched scripts. After that, all config changes apply live.
+
+### 4. Open Tweaker.app
+
+```bash
+open Tweaker.app
+```
+
+Use the app to configure encoder functions, button mappings, and themes. Changes save automatically.
+
+### 5. Enable custom keystrokes (optional)
+
+If you want to send keyboard shortcuts (e.g., Cmd+Shift+R for export):
+
+1. Open **System Settings → Privacy & Security → Accessibility**
+2. Click **+**, press **Cmd+Shift+G**, paste `~/.tweaker/tweaker_keystroke_server`
+3. Toggle it **on**
+4. In Tweaker.app, make sure `enable_custom_keystrokes` is **true**
+5. Assign a button to **Custom Keystroke** and set the key + modifiers
+
+> **Note**: If you ever update the keystroke server binary (by re-running the installer after a repo update), you'll need to remove and re-add it in Accessibility settings — re-signing the binary invalidates the trust entry.
 
 ## Tweaker App
 
-Build and open the config app:
+The pre-built `Tweaker.app` is included in the repo. Just double-click or `open Tweaker.app`.
+
+To rebuild from source (requires Xcode / Swift):
 
 ```bash
 cd Tweaker
 swift build -c release
 cp .build/arm64-apple-macosx/release/Tweaker ../Tweaker.app/Contents/MacOS/Tweaker
-open ../Tweaker.app
 ```
-
-Or just open `Tweaker.app` if already built.
 
 The app has two sections:
 - **Transport Encoders** — knob function assignment with speed/sensitivity sliders
@@ -85,12 +116,26 @@ Themes: Midnight, Arctic, FL Studio, System.
 
 Encoder presets: Stock, Fast (3x–4x), Turbo (6x–8x).
 
+## Updating
+
+When you pull new changes:
+
+```bash
+git pull
+./install.sh
+# Restart FL Studio
+```
+
+The installer only re-signs the keystroke server binary if it changed. If it didn't change, your Accessibility trust is preserved.
+
 ## Restoring Originals
 
 ```bash
 ./restore.sh
 # Restart FL Studio
 ```
+
+This restores all original Novation script files from the backup created during first install.
 
 ## Documentation
 
@@ -102,4 +147,4 @@ Encoder presets: Stock, Fast (3x–4x), Turbo (6x–8x).
 
 - **Novation Components** or **FL Studio updates** may overwrite patched files — re-run `./install.sh`.
 - Only transport mode encoders are affected. Mixer, plugin, and sends modes are untouched.
-- Works with all MK4 sizes (25/37/49/61/88).
+- The installer never overwrites your `tweaker_config.json` — your settings are safe across updates.
