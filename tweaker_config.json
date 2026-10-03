@@ -38,5 +38,27 @@
     },
     "swing": {
         "sensitivity": 50
+    },
+    "buttons": {
+        "shift_metronome": {"function": "toggle_pat_song"},
+        "shift_play": {"function": "not_used"},
+        "shift_stop": {"function": "not_used"},
+        "shift_record": {"function": "not_used"},
+        "shift_loop": {"function": "not_used"},
+        "shift_capture_midi": {"function": "not_used"},
+        "shift_quantise": {"function": "not_used"},
+        "shift_fader_1": {"function": "not_used"},
+        "shift_fader_2": {"function": "not_used"},
+        "shift_fader_3": {"function": "not_used"},
+        "shift_fader_4": {"function": "not_used"},
+        "shift_fader_5": {"function": "not_used"},
+        "shift_fader_6": {"function": "not_used"},
+        "shift_fader_7": {"function": "not_used"},
+        "shift_fader_8": {"function": "not_used"},
+        "shift_arm_select": {"function": "not_used"},
+        "shift_encoder_page_up": {"function": "not_used"},
+        "shift_encoder_page_down": {"function": "not_used"},
+        "shift_pads_page_up": {"function": "not_used"},
+        "shift_pads_page_down": {"function": "not_used"}
     }
 }

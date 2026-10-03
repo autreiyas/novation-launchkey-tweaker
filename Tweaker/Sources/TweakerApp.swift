@@ -7,10 +7,10 @@ struct TweakerApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .frame(minWidth: 720, minHeight: 520)
+                .frame(minWidth: 380, minHeight: 420)
         }
         .windowStyle(.titleBar)
-        .defaultSize(width: 780, height: 560)
+        .defaultSize(width: 780, height: 520)
         .commands {
             CommandGroup(replacing: .newItem) {}
         }

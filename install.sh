@@ -5,8 +5,10 @@
 # This script:
 #   1. Backs up the original Novation transport view files
 #   2. Installs patched views with speed multipliers + custom knob mappings
-#   3. Installs the config loader and default config JSON
-#   4. Installs the custom view modules for extra knob functions
+#   3. Installs patched product_defs, surface_action_generator, and application
+#   4. Installs the config loader and default config JSON
+#   5. Installs the custom view modules for extra knob functions
+#   6. Installs shifted button remapping support
 #
 # To restore originals: ./restore.sh
 #
@@ -16,6 +18,9 @@ set -e
 NOVATION_DIR="$HOME/Documents/Image-Line/FL Studio/Settings/Hardware/Novation"
 VIEW_DIR="$NOVATION_DIR/script/device_independent/view"
 LAYOUT_DIR="$NOVATION_DIR/script/device_dependent/LaunchkeyMk4Range"
+APP_DIR="$NOVATION_DIR/script/device_dependent/LaunchkeyMk4"
+PRODUCT_DEFS_DIR="$NOVATION_DIR/script/product_defs"
+ACTION_GEN_DIR="$NOVATION_DIR/script/action_generators/surface_action_generator"
 BACKUP_DIR="$HOME/Documents/Image-Line/FL Studio/Settings/Hardware/Novation_backup_originals"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
@@ -35,9 +40,11 @@ CUSTOM_VIEWS=(
     "transport_channel_volume_view.py"
     "transport_channel_pan_view.py"
     "transport_swing_view.py"
+    "tweaker_button_view.py"
+    "keystroke_sender.py"
 )
 
-echo "=== Tweaker — Launchkey MK4 Transport Encoder Patch ==="
+echo "=== Tweaker — Launchkey MK4 Patch ==="
 echo ""
 
 # Check that the Novation directory exists
@@ -68,6 +75,24 @@ if [ -f "$LAYOUT_DIR/transport_encoder_layout_manager.py" ] && [ ! -f "$BACKUP_D
     echo "  Backed up: transport_encoder_layout_manager.py"
 fi
 
+# Backup product_defs
+if [ -f "$PRODUCT_DEFS_DIR/launchkey_mk4_product_defs.py" ] && [ ! -f "$BACKUP_DIR/launchkey_mk4_product_defs.py" ]; then
+    cp "$PRODUCT_DEFS_DIR/launchkey_mk4_product_defs.py" "$BACKUP_DIR/launchkey_mk4_product_defs.py"
+    echo "  Backed up: launchkey_mk4_product_defs.py"
+fi
+
+# Backup surface_action_generator
+if [ -f "$ACTION_GEN_DIR/launchkey_mk4_surface_action_generator.py" ] && [ ! -f "$BACKUP_DIR/launchkey_mk4_surface_action_generator.py" ]; then
+    cp "$ACTION_GEN_DIR/launchkey_mk4_surface_action_generator.py" "$BACKUP_DIR/launchkey_mk4_surface_action_generator.py"
+    echo "  Backed up: launchkey_mk4_surface_action_generator.py"
+fi
+
+# Backup application
+if [ -f "$APP_DIR/application.py" ] && [ ! -f "$BACKUP_DIR/application.py" ]; then
+    cp "$APP_DIR/application.py" "$BACKUP_DIR/application.py"
+    echo "  Backed up: application.py"
+fi
+
 # Install patched view files
 echo ""
 echo "Installing patched views..."
@@ -78,7 +103,7 @@ done
 
 # Install custom view modules into a patched_views package inside Novation dir
 echo ""
-echo "Installing custom knob views..."
+echo "Installing custom knob & button views..."
 mkdir -p "$NOVATION_DIR/patched_views"
 touch "$NOVATION_DIR/patched_views/__init__.py"
 for f in "${CUSTOM_VIEWS[@]}"; do
@@ -91,6 +116,22 @@ echo ""
 echo "Installing transport encoder layout manager..."
 cp "$SCRIPT_DIR/patched_views/transport_encoder_layout_manager.py" "$LAYOUT_DIR/transport_encoder_layout_manager.py"
 echo "  Installed: transport_encoder_layout_manager.py"
+
+# Install patched product_defs (adds shifted button enum values)
+echo ""
+echo "Installing patched product_defs..."
+cp "$SCRIPT_DIR/patched_views/launchkey_mk4_product_defs.py" "$PRODUCT_DEFS_DIR/launchkey_mk4_product_defs.py"
+echo "  Installed: launchkey_mk4_product_defs.py"
+
+# Install patched surface_action_generator (adds shifted button mappings)
+echo "Installing patched surface_action_generator..."
+cp "$SCRIPT_DIR/patched_views/launchkey_mk4_surface_action_generator.py" "$ACTION_GEN_DIR/launchkey_mk4_surface_action_generator.py"
+echo "  Installed: launchkey_mk4_surface_action_generator.py"
+
+# Install patched application (adds TweakerButtonView)
+echo "Installing patched application..."
+cp "$SCRIPT_DIR/patched_views/application.py" "$APP_DIR/application.py"
+echo "  Installed: application.py"
 
 # Install config loader + default config
 echo ""
@@ -108,8 +149,8 @@ fi
 echo ""
 echo "=== Installation complete! ==="
 echo ""
-echo "1. Restart FL Studio for the initial setup."
-echo "2. After that, use Tweaker to adjust settings live:"
+echo "1. Restart FL Studio for changes to take effect."
+echo "2. Use Tweaker to adjust settings live:"
 echo "   $SCRIPT_DIR/Tweaker.app"
 echo ""
 echo "To restore originals: ./restore.sh"

@@ -33,6 +33,28 @@ def _default_config():
         "channel_volume": {"sensitivity": 1.5},
         "channel_pan": {"sensitivity": 1.5},
         "swing": {"sensitivity": 50},
+        "buttons": {
+            "shift_metronome": {"function": "toggle_pat_song"},
+            "shift_play": {"function": "not_used"},
+            "shift_stop": {"function": "not_used"},
+            "shift_record": {"function": "not_used"},
+            "shift_loop": {"function": "not_used"},
+            "shift_capture_midi": {"function": "not_used"},
+            "shift_quantise": {"function": "not_used"},
+            "shift_fader_1": {"function": "not_used"},
+            "shift_fader_2": {"function": "not_used"},
+            "shift_fader_3": {"function": "not_used"},
+            "shift_fader_4": {"function": "not_used"},
+            "shift_fader_5": {"function": "not_used"},
+            "shift_fader_6": {"function": "not_used"},
+            "shift_fader_7": {"function": "not_used"},
+            "shift_fader_8": {"function": "not_used"},
+            "shift_arm_select": {"function": "not_used"},
+            "shift_encoder_page_up": {"function": "not_used"},
+            "shift_encoder_page_down": {"function": "not_used"},
+            "shift_pads_page_up": {"function": "not_used"},
+            "shift_pads_page_down": {"function": "not_used"},
+        },
     }
 
 
@@ -58,6 +80,12 @@ def get_knob_function(knob_index):
 def get_function_param(function_name, param_name, default=1):
     cfg = get_config()
     return cfg.get(function_name, {}).get(param_name, default)
+
+
+def get_button_mapping(button_name):
+    cfg = get_config()
+    buttons = cfg.get("buttons", {})
+    return buttons.get(button_name)
 
 
 # Convenience accessors used by patched views
