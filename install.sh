@@ -111,6 +111,14 @@ for f in "${CUSTOM_VIEWS[@]}"; do
     echo "  Installed: patched_views/$f"
 done
 
+# Install keystroke_helper binary to a path without spaces
+if [ -f "$SCRIPT_DIR/keystroke_helper/keystroke_helper" ]; then
+    mkdir -p "$HOME/.tweaker"
+    cp "$SCRIPT_DIR/keystroke_helper/keystroke_helper" "$HOME/.tweaker/keystroke_helper"
+    chmod +x "$HOME/.tweaker/keystroke_helper"
+    echo "  Installed: ~/.tweaker/keystroke_helper"
+fi
+
 # Install layout manager
 echo ""
 echo "Installing transport encoder layout manager..."
@@ -166,5 +174,9 @@ echo ""
 echo "1. Restart FL Studio for changes to take effect."
 echo "2. Use Tweaker to adjust settings live:"
 echo "   $SCRIPT_DIR/Tweaker.app"
+echo ""
+echo "For custom keystrokes: add keystroke_helper to"
+echo "   System Settings → Privacy & Security → Accessibility"
+echo "   Binary location: $HOME/.tweaker/keystroke_helper"
 echo ""
 echo "To restore originals: ./restore.sh"

@@ -1,5 +1,6 @@
 {
     "enable_shift_buttons": true,
+    "enable_custom_keystrokes": false,
     "knobs": {
         "0": "song_position",
         "1": "horizontal_zoom",

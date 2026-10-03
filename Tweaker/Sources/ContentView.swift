@@ -669,10 +669,17 @@ struct ButtonMappingCard: View {
         viewModel.markDirty()
     }
 
+    private var availableFunctions: [ButtonFunction] {
+        if viewModel.config.enable_custom_keystrokes == true {
+            return ButtonFunction.allCases
+        }
+        return ButtonFunction.allCases.filter { $0 != .customKeystroke }
+    }
+
     private var buttonFunctionPicker: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 2) {
-                ForEach(ButtonFunction.allCases) { fn in
+                ForEach(availableFunctions) { fn in
                     Button(action: {
                         if fn == .customKeystroke {
                             viewModel.config.setButtonFunction(fn, for: button.configKey,

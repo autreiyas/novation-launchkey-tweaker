@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.0.4
+
+### Added
+- `enable_custom_keystrokes` config flag — custom keystroke option hidden in UI when `false`
+- Background keystroke server (`tweaker_keystroke_server`) with FIFO-based IPC for macOS keystroke simulation
+- LaunchAgent plist for auto-starting the keystroke server
+
+### Changed
+- Keystroke sender rewritten to use FIFO pipe to background server (replaces direct `osascript` calls)
+- Keystroke helper binary installed to `~/.tweaker/` (avoids spaces in FL Studio path)
+
+### Known Issues
+- Custom keystrokes not yet functional — FL Studio's Python subinterpreter blocks `ctypes`, `subprocess`, `socket`, and `os.open`; `os.system()` echo to FIFO not reaching the server during MIDI callbacks
+
 ## 1.0.3
 
 ### Fixed
