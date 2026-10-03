@@ -4,14 +4,21 @@
 
 ### Added
 - Native FL Studio API actions: Copy, Cut, Paste, Delete, Insert, Nudge +/-, Punch In/Out, Mute, Wait for Input
+- F1–F12 keyboard shortcuts mapped to `FPT_F*` API constants (F5=Playlist, F9=Mixer, F10=MIDI Settings, etc.)
+- Toggle Browser and Open Menu actions
 - Button function picker now grouped by category (Transport, Editing, Windows, Navigation, Other)
-- Keystroke mode built into Tweaker.app (`--keystroke` CLI flag) — no separate helper binary needed
+- Configurable debug flags in `tweaker_config.json` (`debug.log_actions`, `debug.dump_midi_constants`, `debug.dump_api_methods`)
 
 ### Removed
 - Fader select buttons from shift mapping — Shift+Fader is used by stock firmware for fader mode switching
 
 ### Changed
-- Custom keystrokes now use Tweaker.app's built-in CGEvents instead of external helper binary
+- F-key dispatch simplified to single lookup (`FPT_F1`–`FPT_F12`)
+- Debug output on FL Studio startup now controlled by config flags instead of hardcoded
+
+### Known Limitations
+- Export (Ctrl+R) has no FL Studio API equivalent — not available through MIDI scripting
+- Custom keystrokes require macOS Accessibility permissions which are difficult to grant to ad-hoc signed apps
 
 ## 1.0.4
 

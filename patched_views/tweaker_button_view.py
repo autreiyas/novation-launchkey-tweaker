@@ -2,8 +2,9 @@
 # Tweaker: Handles shifted button presses with configurable actions.
 # Reads button mappings from tweaker_config.json.
 #
+import os
 from script.device_independent.util_view.view import View
-from transport_speed_config import get_button_mapping
+from transport_speed_config import get_button_mapping, get_config
 
 try:
     import transport
@@ -12,11 +13,48 @@ except ImportError:
     transport = None
     ui = None
 
-
 try:
     import midi
 except Exception:
     midi = None
+
+try:
+    import general
+except Exception:
+    general = None
+
+
+# --- Debug system (controlled by config flags) ---
+
+def _get_debug_flags():
+    """Read debug flags from tweaker_config.json."""
+    config = get_config()
+    debug = config.get("debug", {})
+    return debug
+
+def _debug_dump_on_load():
+    flags = _get_debug_flags()
+
+    if flags.get("dump_midi_constants"):
+        if midi:
+            print("\n=== MIDI CONSTANTS DUMP ===")
+            for prefix in ('FPT_', 'SBN_', 'REC_', 'GT_', 'PME_', 'SM_', 'SS_'):
+                consts = [(x, getattr(midi, x)) for x in sorted(dir(midi)) if x.startswith(prefix)]
+                if consts:
+                    print("\n[%s]" % prefix)
+                    for name, val in consts:
+                        print("  %s = %s" % (name, val))
+            print("=== END DUMP ===\n")
+
+    if flags.get("dump_api_methods"):
+        print("\n=== API METHODS DUMP ===")
+        for mod_name, mod in [('ui', ui), ('transport', transport), ('general', general)]:
+            if mod:
+                print("\n[%s]" % mod_name)
+                print([x for x in dir(mod) if not x.startswith('_')])
+        print("=== END DUMP ===\n")
+
+_debug_dump_on_load()
 
 
 # Button name -> FunctionToButton key mapping
@@ -48,8 +86,7 @@ def _run_gt(command_name):
     """Run a globalTransport command by midi module attribute name."""
     cmd = _gt(command_name)
     if cmd is not None:
-        result = transport.globalTransport(cmd, 1, midi.PME_System, midi.GT_All)
-        print("[Tweaker] globalTransport(%s=%d) -> %s" % (command_name, cmd, result))
+        transport.globalTransport(cmd, 1, midi.PME_System, midi.GT_All)
     else:
         print("[Tweaker] midi.%s not found" % command_name)
 
@@ -59,7 +96,9 @@ def _execute_action(fl, action_name, params=None):
     if action_name == "not_used":
         return
 
-    print("[Tweaker] action: %s" % action_name)
+    debug = _get_debug_flags()
+    if debug.get("log_actions", True):
+        print("[Tweaker] action: %s" % action_name)
 
     # --- Direct FL wrapper methods ---
     if action_name == "tap_tempo":
@@ -99,7 +138,7 @@ def _execute_action(fl, action_name, params=None):
     elif action_name == "insert":
         _run_gt("FPT_Insert")
 
-    # --- globalTransport commands (FPT_ constants) ---
+    # --- globalTransport commands ---
     elif action_name == "save":
         _run_gt("FPT_Save")
     elif action_name == "save_new":
@@ -122,31 +161,12 @@ def _execute_action(fl, action_name, params=None):
         ui.navigateBrowser(0, 0)
     elif action_name == "open_menu":
         _run_gt("FPT_Menu")
-    # F-keys (FL Studio shortcuts via API)
-    elif action_name == "f1":
-        _run_gt("FPT_F1")
-    elif action_name == "f2":
-        _run_gt("FPT_F2")
-    elif action_name == "f3":
-        _run_gt("FPT_F3")
-    elif action_name == "f4":
-        _run_gt("FPT_F4")
-    elif action_name == "f5":
-        _run_gt("FPT_F5")
-    elif action_name == "f6":
-        _run_gt("FPT_F6")
-    elif action_name == "f7":
-        _run_gt("FPT_F7")
-    elif action_name == "f8":
-        _run_gt("FPT_F8")
-    elif action_name == "f9":
-        _run_gt("FPT_F9")
-    elif action_name == "f10":
-        _run_gt("FPT_F10")
-    elif action_name == "f11":
-        _run_gt("FPT_F11")
-    elif action_name == "f12":
-        _run_gt("FPT_F12")
+
+    # --- F-keys (FL Studio shortcuts via API) ---
+    elif action_name in ("f1", "f2", "f3", "f4", "f5", "f6",
+                          "f7", "f8", "f9", "f10", "f11", "f12"):
+        _run_gt("FPT_%s" % action_name.upper())
+
     elif action_name == "nudge_plus":
         _run_gt("FPT_NudgePlus")
     elif action_name == "nudge_minus":
@@ -165,18 +185,11 @@ def _execute_action(fl, action_name, params=None):
             key = params.get("key", "")
             modifiers = params.get("modifiers", [])
             if key:
-                # Build keystroke_helper command with stderr log
-                helper = os.path.expanduser("~/.tweaker/keystroke_helper")
-                log = os.path.expanduser("~/.tweaker/keystroke.log")
-                mod_str = ",".join(m.lower() for m in modifiers) if modifiers else ""
-                if mod_str:
-                    cmd = "%s %s %s 2>>%s" % (helper, key.lower(), mod_str, log)
-                else:
-                    cmd = "%s %s 2>>%s" % (helper, key.lower(), log)
-                # Also write a test file to prove os.system runs
-                os.system("echo '%s' >> %s" % (cmd, os.path.expanduser("~/.tweaker/commands.log")))
-                print("[Tweaker] running: %s" % cmd)
-                os.system(cmd)
+                try:
+                    from patched_views.keystroke_sender import send_keystroke
+                    send_keystroke(key, modifiers)
+                except Exception as e:
+                    print("[Tweaker] keystroke error: %s" % e)
 
     else:
         print("[Tweaker] unknown action: %s" % action_name)

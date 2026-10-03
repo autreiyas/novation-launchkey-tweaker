@@ -1,6 +1,11 @@
 {
     "enable_shift_buttons": true,
     "enable_custom_keystrokes": true,
+    "debug": {
+        "log_actions": true,
+        "dump_midi_constants": false,
+        "dump_api_methods": false
+    },
     "knobs": {
         "0": "song_position",
         "1": "horizontal_zoom",
