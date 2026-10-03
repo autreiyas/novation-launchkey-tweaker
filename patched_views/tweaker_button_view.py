@@ -203,6 +203,11 @@ class TweakerButtonView(View):
         self.fl = fl
         self.product_defs = product_defs
 
+    def handle_TimerEventAction(self, action):
+        """Called on OnIdle — flush any pending keystrokes."""
+        from patched_views.keystroke_sender import flush_pending
+        flush_pending()
+
     def handle_ButtonPressedAction(self, action):
         for config_name, function_key in SHIFT_BUTTONS.items():
             expected_button = self.product_defs.FunctionToButton.get(function_key)

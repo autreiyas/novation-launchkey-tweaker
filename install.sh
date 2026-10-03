@@ -9,6 +9,7 @@
 #   4. Installs the config loader and default config JSON
 #   5. Installs the custom view modules for extra knob functions
 #   6. Installs shifted button remapping support
+#   7. Installs the keystroke server for custom keystroke support
 #
 # To restore originals: ./restore.sh
 #
@@ -22,6 +23,10 @@ APP_DIR="$NOVATION_DIR/script/device_dependent/LaunchkeyMk4"
 PRODUCT_DEFS_DIR="$NOVATION_DIR/script/product_defs"
 ACTION_GEN_DIR="$NOVATION_DIR/script/action_generators/surface_action_generator"
 BACKUP_DIR="$HOME/Documents/Image-Line/FL Studio/Settings/Hardware/Novation_backup_originals"
+TWEAKER_DIR="$HOME/.tweaker"
+LAUNCH_AGENTS_DIR="$HOME/Library/LaunchAgents"
+PLIST_LABEL="com.tweaker.keystroke-server"
+PLIST_PATH="$LAUNCH_AGENTS_DIR/$PLIST_LABEL.plist"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # Original files to back up and replace
@@ -111,14 +116,6 @@ for f in "${CUSTOM_VIEWS[@]}"; do
     echo "  Installed: patched_views/$f"
 done
 
-# Install keystroke_helper binary to a path without spaces
-if [ -f "$SCRIPT_DIR/keystroke_helper/keystroke_helper" ]; then
-    mkdir -p "$HOME/.tweaker"
-    cp "$SCRIPT_DIR/keystroke_helper/keystroke_helper" "$HOME/.tweaker/keystroke_helper"
-    chmod +x "$HOME/.tweaker/keystroke_helper"
-    echo "  Installed: ~/.tweaker/keystroke_helper"
-fi
-
 # Install layout manager
 echo ""
 echo "Installing transport encoder layout manager..."
@@ -168,15 +165,85 @@ else
     echo "  Kept existing: tweaker_config.json"
 fi
 
+# --- Keystroke Server Setup ---
+echo ""
+echo "Installing keystroke server..."
+mkdir -p "$TWEAKER_DIR"
+
+# Check if custom keystrokes are enabled
+KEYSTROKES_ENABLED=$(python3 -c "import json; c=json.load(open('$SCRIPT_DIR/tweaker_config.json')); print(c.get('enable_custom_keystrokes', False))" 2>/dev/null || echo "False")
+
+if [ "$KEYSTROKES_ENABLED" = "True" ]; then
+    # Compile the keystroke server if source is available and newer than binary
+    SERVER_SRC="$SCRIPT_DIR/keystroke_helper/keystroke_server.swift"
+    SERVER_BIN="$SCRIPT_DIR/keystroke_helper/tweaker_keystroke_server"
+
+    if [ -f "$SERVER_SRC" ]; then
+        if [ ! -f "$SERVER_BIN" ] || [ "$SERVER_SRC" -nt "$SERVER_BIN" ]; then
+            echo "  Compiling keystroke server..."
+            swiftc -O -o "$SERVER_BIN" "$SERVER_SRC" \
+                -framework CoreGraphics -framework ApplicationServices -framework Foundation 2>&1
+        fi
+    fi
+
+    # Stop existing server
+    launchctl unload "$PLIST_PATH" 2>/dev/null || true
+    sleep 0.3
+
+    # Install binary (only if changed, to preserve Accessibility trust)
+    if [ -f "$SERVER_BIN" ]; then
+        NEEDS_INSTALL=false
+        if [ ! -f "$TWEAKER_DIR/tweaker_keystroke_server" ]; then
+            NEEDS_INSTALL=true
+        elif ! cmp -s "$SERVER_BIN" "$TWEAKER_DIR/tweaker_keystroke_server"; then
+            NEEDS_INSTALL=true
+        fi
+
+        if [ "$NEEDS_INSTALL" = true ]; then
+            cp "$SERVER_BIN" "$TWEAKER_DIR/tweaker_keystroke_server"
+            chmod +x "$TWEAKER_DIR/tweaker_keystroke_server"
+            codesign -s - -f "$TWEAKER_DIR/tweaker_keystroke_server" 2>/dev/null
+            echo "  Installed: ~/.tweaker/tweaker_keystroke_server"
+            echo ""
+            echo "  *** IMPORTANT: Binary was updated. You must re-add it to Accessibility: ***"
+            echo "  System Settings → Privacy & Security → Accessibility"
+            echo "  Remove the old entry, click +, Cmd+Shift+G, paste:"
+            echo "  ~/.tweaker/tweaker_keystroke_server"
+        else
+            echo "  Binary unchanged — Accessibility trust preserved"
+        fi
+    fi
+
+    # Install LaunchAgent plist (with correct home path)
+    mkdir -p "$LAUNCH_AGENTS_DIR"
+    sed "s|__HOME__|$HOME|g" "$SCRIPT_DIR/com.tweaker.keystroke-server.plist" > "$PLIST_PATH"
+    echo "  Installed: LaunchAgent ($PLIST_LABEL)"
+
+    # Start the server
+    launchctl load "$PLIST_PATH" 2>/dev/null
+    sleep 0.5
+
+    if pgrep -f tweaker_keystroke_server > /dev/null 2>&1; then
+        echo "  Keystroke server running"
+    else
+        echo "  WARNING: Keystroke server failed to start. Check ~/.tweaker/server.log"
+    fi
+else
+    echo "  Custom keystrokes DISABLED (set enable_custom_keystrokes=true to enable)"
+    # Stop server if running
+    launchctl unload "$PLIST_PATH" 2>/dev/null || true
+fi
+
 echo ""
 echo "=== Installation complete! ==="
 echo ""
 echo "1. Restart FL Studio for changes to take effect."
 echo "2. Use Tweaker to adjust settings live:"
-echo "   $SCRIPT_DIR/Tweaker.app"
+echo "   open $SCRIPT_DIR/Tweaker.app"
 echo ""
-echo "For custom keystrokes: add keystroke_helper to"
-echo "   System Settings → Privacy & Security → Accessibility"
-echo "   Binary location: $HOME/.tweaker/keystroke_helper"
-echo ""
+if [ "$KEYSTROKES_ENABLED" = "True" ]; then
+    echo "Custom keystrokes: ensure ~/.tweaker/tweaker_keystroke_server"
+    echo "is in System Settings → Privacy & Security → Accessibility"
+    echo ""
+fi
 echo "To restore originals: ./restore.sh"

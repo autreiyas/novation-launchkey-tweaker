@@ -10,6 +10,11 @@ Tweaker/.swiftpm/
 # App bundle (built artifact — rebuild with swift build)
 Tweaker.app/
 
+# Compiled binaries
+keystroke_helper/keystroke_helper
+keystroke_helper/keystroke_server
+keystroke_helper/tweaker_keystroke_server
+
 # Python
 __pycache__/
 *.pyc

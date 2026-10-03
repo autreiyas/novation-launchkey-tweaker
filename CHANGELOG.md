@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.0.6
+
+### Fixed
+- **Custom keystrokes now working** — complete pipeline from button press to macOS keystroke delivery
+- Discovered FL Studio's subinterpreter allows `open()` in the script directory but nowhere else
+- Keystroke commands queued during MIDI callbacks, flushed during OnIdle via `TimerEventAction`
+
+### Added
+- File-based IPC: Python writes command file to Novation script dir, server polls and executes
+- Keystroke server auto-install via `install.sh` (binary, LaunchAgent, Accessibility instructions)
+- `docs/` directory with custom keystroke architecture, known issues documentation
+
+### Changed
+- Keystroke server rewritten to use file polling instead of FIFO (FIFO blocked by subinterpreter)
+- Keystroke server uses CGEvents (with AppleScript fallback) instead of standalone helper binary
+- `install.sh` now handles full keystroke server setup (binary install, LaunchAgent, codesign)
+- Updated README with custom keystroke setup instructions
+
 ## 1.0.5
 
 ### Added
@@ -16,10 +34,6 @@
 - F-key dispatch simplified to single lookup (`FPT_F1`–`FPT_F12`)
 - Debug output on FL Studio startup now controlled by config flags instead of hardcoded
 
-### Known Limitations
-- Export (Ctrl+R) has no FL Studio API equivalent — not available through MIDI scripting
-- Custom keystrokes require macOS Accessibility permissions which are difficult to grant to ad-hoc signed apps
-
 ## 1.0.4
 
 ### Added
@@ -30,9 +44,6 @@
 ### Changed
 - Keystroke sender rewritten to use FIFO pipe to background server (replaces direct `osascript` calls)
 - Keystroke helper binary installed to `~/.tweaker/` (avoids spaces in FL Studio path)
-
-### Known Issues
-- Custom keystrokes not yet functional — FL Studio's Python subinterpreter blocks `ctypes`, `subprocess`, `socket`, and `os.open`; `os.system()` echo to FIFO not reaching the server during MIDI callbacks
 
 ## 1.0.3
 

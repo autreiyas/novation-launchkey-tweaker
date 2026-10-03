@@ -32,10 +32,13 @@ Available knob functions: Song Position, Horizontal/Vertical Zoom, Markers, Temp
 | Group | Buttons |
 |-------|---------|
 | **Transport** | Stop, Play, Record, Loop, Capture MIDI, Quantise, Metronome |
-| **Fader Select** | Faders 1–8, Arm/Select |
-| **Navigation** | Pads ▲/▼, Encoder ▲/▼ |
+| **Navigation** | Pads up/down, Encoder up/down |
 
-Available actions: Toggle Pat/Song, Tap Tempo, Toggle Metronome, Toggle Loop Record, Undo, Redo, Save, Save New, Toggle Snap, Add Marker, Toggle Step Edit, Toggle Countdown, Toggle Overdub, Toggle Shuffle, Clone Pattern, Toggle Master Sync, Next Window, Focus Mixer/Channel Rack/Playlist, Open Plugin Picker, or any Custom Keystroke via macOS accessibility.
+Available actions include native FL Studio API calls (Toggle Pat/Song, Save, Undo, Redo, Copy, Cut, Paste, F1–F12, etc.) and custom keystrokes for anything else (like Cmd+Shift+R to export as MP3).
+
+### Custom Keystrokes
+
+Send any macOS keyboard shortcut from a shift button press. Works around FL Studio's sandboxed Python by queuing commands during MIDI callbacks and flushing them via a background keystroke server during OnIdle. See [docs/custom-keystrokes.md](docs/custom-keystrokes.md) for technical details.
 
 ## Installation
 
@@ -47,6 +50,19 @@ chmod +x install.sh restore.sh
 
 # Restart FL Studio (one time only)
 ```
+
+The installer handles everything: patched scripts, config files, keystroke server binary, and LaunchAgent setup.
+
+### Custom Keystroke Setup
+
+If you want to use custom keystrokes (e.g., Cmd+Shift+R for export):
+
+1. Run `./install.sh` (installs and starts the keystroke server)
+2. Open **System Settings → Privacy & Security → Accessibility**
+3. Click **+**, press **Cmd+Shift+G**, paste `~/.tweaker/tweaker_keystroke_server`
+4. Toggle it **on**
+5. Set `enable_custom_keystrokes` to `true` in Tweaker.app
+6. Assign a button to **Custom Keystroke** and configure the key/modifiers
 
 ## Tweaker App
 
@@ -67,7 +83,7 @@ The app has two sections:
 
 Themes: Midnight, Arctic, FL Studio, System.
 
-Encoder presets: Stock, Fast (3–4x), Turbo (6–8x).
+Encoder presets: Stock, Fast (3x–4x), Turbo (6x–8x).
 
 ## Restoring Originals
 
@@ -76,9 +92,14 @@ Encoder presets: Stock, Fast (3–4x), Turbo (6–8x).
 # Restart FL Studio
 ```
 
+## Documentation
+
+- [Custom Keystrokes](docs/custom-keystrokes.md) — architecture, setup, troubleshooting
+- [Known Issues](docs/known-issues.md) — FL Studio subinterpreter limitations, Accessibility trust
+- [Changelog](CHANGELOG.md) — version history
+
 ## Notes
 
 - **Novation Components** or **FL Studio updates** may overwrite patched files — re-run `./install.sh`.
 - Only transport mode encoders are affected. Mixer, plugin, and sends modes are untouched.
 - Works with all MK4 sizes (25/37/49/61/88).
-- Custom Keystroke requires macOS Accessibility permissions for FL Studio.
