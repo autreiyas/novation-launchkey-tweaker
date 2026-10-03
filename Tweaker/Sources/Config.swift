@@ -294,6 +294,7 @@ struct ButtonMapping: Codable {
 // MARK: - Config model
 
 struct TweakerConfig: Codable {
+    var enable_shift_buttons: Bool?
     var knobs: [String: String]
     var song_position: ParamSet?
     var horizontal_zoom: ParamSet?
@@ -496,6 +497,7 @@ struct ConfigFile {
         // buttons entries need {"function": "...", "params": {"key": "...", "modifiers": [...]}}
         // for custom_keystroke, but just {"function": "..."} for others.
         var dict: [String: Any] = [:]
+        dict["enable_shift_buttons"] = config.enable_shift_buttons ?? false
         dict["knobs"] = config.knobs
 
         // Encode knob param sets

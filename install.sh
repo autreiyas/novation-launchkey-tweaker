@@ -117,21 +117,35 @@ echo "Installing transport encoder layout manager..."
 cp "$SCRIPT_DIR/patched_views/transport_encoder_layout_manager.py" "$LAYOUT_DIR/transport_encoder_layout_manager.py"
 echo "  Installed: transport_encoder_layout_manager.py"
 
-# Install patched product_defs (adds shifted button enum values)
-echo ""
-echo "Installing patched product_defs..."
-cp "$SCRIPT_DIR/patched_views/launchkey_mk4_product_defs.py" "$PRODUCT_DEFS_DIR/launchkey_mk4_product_defs.py"
-echo "  Installed: launchkey_mk4_product_defs.py"
+# Check if shift buttons are enabled in config
+SHIFT_ENABLED=$(python3 -c "import json; c=json.load(open('$SCRIPT_DIR/tweaker_config.json')); print(c.get('enable_shift_buttons', False))" 2>/dev/null || echo "False")
 
-# Install patched surface_action_generator (adds shifted button mappings)
-echo "Installing patched surface_action_generator..."
-cp "$SCRIPT_DIR/patched_views/launchkey_mk4_surface_action_generator.py" "$ACTION_GEN_DIR/launchkey_mk4_surface_action_generator.py"
-echo "  Installed: launchkey_mk4_surface_action_generator.py"
+if [ "$SHIFT_ENABLED" = "True" ]; then
+    echo ""
+    echo "Installing shift button patches (enable_shift_buttons=true)..."
+    cp "$SCRIPT_DIR/patched_views/launchkey_mk4_product_defs.py" "$PRODUCT_DEFS_DIR/launchkey_mk4_product_defs.py"
+    echo "  Installed: launchkey_mk4_product_defs.py"
+    cp "$SCRIPT_DIR/patched_views/launchkey_mk4_surface_action_generator.py" "$ACTION_GEN_DIR/launchkey_mk4_surface_action_generator.py"
+    echo "  Installed: launchkey_mk4_surface_action_generator.py"
+    cp "$SCRIPT_DIR/patched_views/application.py" "$APP_DIR/application.py"
+    echo "  Installed: application.py"
+else
+    echo ""
+    echo "Shift button patches DISABLED (set enable_shift_buttons=true to enable)."
+    # Restore originals if they were previously patched
+    if [ -f "$BACKUP_DIR/launchkey_mk4_product_defs.py" ]; then
+        cp "$BACKUP_DIR/launchkey_mk4_product_defs.py" "$PRODUCT_DEFS_DIR/launchkey_mk4_product_defs.py"
+    fi
+    if [ -f "$BACKUP_DIR/launchkey_mk4_surface_action_generator.py" ]; then
+        cp "$BACKUP_DIR/launchkey_mk4_surface_action_generator.py" "$ACTION_GEN_DIR/launchkey_mk4_surface_action_generator.py"
+    fi
+    if [ -f "$BACKUP_DIR/application.py" ]; then
+        cp "$BACKUP_DIR/application.py" "$APP_DIR/application.py"
+    fi
+fi
 
-# Install patched application (adds TweakerButtonView)
-echo "Installing patched application..."
-cp "$SCRIPT_DIR/patched_views/application.py" "$APP_DIR/application.py"
-echo "  Installed: application.py"
+# Clear pycache to avoid stale bytecode
+find "$NOVATION_DIR" -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null
 
 # Install config loader + default config
 echo ""

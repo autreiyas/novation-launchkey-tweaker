@@ -1,128 +1,71 @@
 #
-# macOS keystroke simulation via CoreGraphics CGEvents.
+# macOS keystroke simulation via osascript (AppleScript).
 # Used by Tweaker to send custom keyboard shortcuts from FL Studio.
 #
-# Requires FL Studio to have Accessibility permissions on macOS:
-#   System Settings > Privacy & Security > Accessibility > FL Studio
+# ctypes and subprocess do not work in FL Studio's Python subinterpreter,
+# so we use os.system() with osascript instead.
 #
-import ctypes
-import ctypes.util
+import os
 
-_cg = None
-_cf = None
-
-# macOS virtual key codes
-KEY_CODES = {
-    "a": 0, "s": 1, "d": 2, "f": 3, "h": 4, "g": 5, "z": 6, "x": 7,
-    "c": 8, "v": 9, "b": 11, "q": 12, "w": 13, "e": 14, "r": 15,
-    "y": 16, "t": 17, "1": 18, "2": 19, "3": 20, "4": 21, "6": 22,
-    "5": 23, "=": 24, "9": 25, "7": 26, "-": 27, "8": 28, "0": 29,
-    "]": 30, "o": 31, "u": 32, "[": 33, "i": 34, "p": 35,
-    "enter": 36, "return": 36, "l": 37, "j": 38, "'": 39, "k": 40,
-    ";": 41, "\\": 42, ",": 43, "/": 44, "n": 45, "m": 46, ".": 47,
-    "tab": 48, "space": 49, "`": 50, "delete": 51, "backspace": 51,
-    "escape": 53, "esc": 53,
-    "f1": 122, "f2": 120, "f3": 99, "f4": 118, "f5": 96, "f6": 97,
-    "f7": 98, "f8": 100, "f9": 101, "f10": 109, "f11": 103, "f12": 111,
+# Key name -> AppleScript key code (for special keys)
+SPECIAL_KEYS = {
+    "return": 36, "enter": 36, "tab": 48, "space": 49,
+    "delete": 51, "backspace": 51, "escape": 53, "esc": 53,
     "up": 126, "down": 125, "left": 123, "right": 124,
     "home": 115, "end": 119, "pageup": 116, "pagedown": 121,
+    "f1": 122, "f2": 120, "f3": 99, "f4": 118, "f5": 96, "f6": 97,
+    "f7": 98, "f8": 100, "f9": 101, "f10": 109, "f11": 103, "f12": 111,
 }
 
-# Modifier flags
-kCGEventFlagMaskCommand = 0x100000
-kCGEventFlagMaskShift = 0x20000
-kCGEventFlagMaskAlternate = 0x80000
-kCGEventFlagMaskControl = 0x40000
-
-MODIFIER_FLAGS = {
-    "cmd": kCGEventFlagMaskCommand,
-    "command": kCGEventFlagMaskCommand,
-    "shift": kCGEventFlagMaskShift,
-    "alt": kCGEventFlagMaskAlternate,
-    "opt": kCGEventFlagMaskAlternate,
-    "option": kCGEventFlagMaskAlternate,
-    "ctrl": kCGEventFlagMaskControl,
-    "control": kCGEventFlagMaskControl,
+MODIFIER_MAP = {
+    "cmd": "command down",
+    "command": "command down",
+    "shift": "shift down",
+    "alt": "option down",
+    "opt": "option down",
+    "option": "option down",
+    "ctrl": "control down",
+    "control": "control down",
 }
-
-
-def _load_frameworks():
-    global _cg, _cf
-    if _cg is not None:
-        return True
-    try:
-        cg_path = ctypes.util.find_library("CoreGraphics")
-        cf_path = ctypes.util.find_library("CoreFoundation")
-        if not cg_path or not cf_path:
-            return False
-        _cg = ctypes.cdll.LoadLibrary(cg_path)
-        _cf = ctypes.cdll.LoadLibrary(cf_path)
-
-        _cg.CGEventSourceCreate.argtypes = [ctypes.c_int32]
-        _cg.CGEventSourceCreate.restype = ctypes.c_void_p
-
-        _cg.CGEventCreateKeyboardEvent.argtypes = [
-            ctypes.c_void_p, ctypes.c_uint16, ctypes.c_bool
-        ]
-        _cg.CGEventCreateKeyboardEvent.restype = ctypes.c_void_p
-
-        _cg.CGEventSetFlags.argtypes = [ctypes.c_void_p, ctypes.c_uint64]
-        _cg.CGEventSetFlags.restype = None
-
-        _cg.CGEventPost.argtypes = [ctypes.c_uint32, ctypes.c_void_p]
-        _cg.CGEventPost.restype = None
-
-        _cf.CFRelease.argtypes = [ctypes.c_void_p]
-        _cf.CFRelease.restype = None
-
-        return True
-    except (OSError, AttributeError):
-        return False
 
 
 def send_keystroke(key, modifiers=None):
     """
-    Send a keyboard event to the system.
+    Send a keyboard event via osascript.
 
     Args:
-        key: Key name (e.g. "e", "f5", "space", "enter")
+        key: Key name (e.g. "l", "f5", "space", "enter")
         modifiers: List of modifier names (e.g. ["cmd", "shift"])
     """
-    if not _load_frameworks():
-        return False
-
     key_lower = key.lower()
-    key_code = KEY_CODES.get(key_lower)
-    if key_code is None:
-        return False
 
-    flags = 0
+    # Build modifier clause
+    mod_parts = []
     if modifiers:
         for mod in modifiers:
-            flag = MODIFIER_FLAGS.get(mod.lower(), 0)
-            flags |= flag
+            m = MODIFIER_MAP.get(mod.lower())
+            if m:
+                mod_parts.append(m)
 
-    # kCGEventSourceStateCombinedSessionState = 0
-    source = _cg.CGEventSourceCreate(0)
-    if not source:
+    using_clause = ""
+    if mod_parts:
+        using_clause = " using {%s}" % ", ".join(mod_parts)
+
+    # Use key code for special keys, keystroke for regular characters
+    if key_lower in SPECIAL_KEYS:
+        code = SPECIAL_KEYS[key_lower]
+        script = 'tell application "System Events" to key code %d%s' % (code, using_clause)
+    elif len(key_lower) == 1:
+        script = 'tell application "System Events" to keystroke "%s"%s' % (key_lower, using_clause)
+    else:
+        print("[Tweaker] unknown key: %s" % key)
         return False
 
     try:
-        # Key down
-        event_down = _cg.CGEventCreateKeyboardEvent(source, key_code, True)
-        if flags:
-            _cg.CGEventSetFlags(event_down, flags)
-        # kCGSessionEventTap = 1 (targets current session/app)
-        _cg.CGEventPost(1, event_down)
-        _cf.CFRelease(event_down)
-
-        # Key up
-        event_up = _cg.CGEventCreateKeyboardEvent(source, key_code, False)
-        if flags:
-            _cg.CGEventSetFlags(event_up, flags)
-        _cg.CGEventPost(1, event_up)
-        _cf.CFRelease(event_up)
-    finally:
-        _cf.CFRelease(source)
-
-    return True
+        cmd = '/usr/bin/osascript -e "%s" &' % script.replace('"', '\\"')
+        print("[Tweaker] sending keystroke: %s" % cmd)
+        os.system(cmd)
+        return True
+    except Exception as e:
+        print("[Tweaker] osascript error: %s" % e)
+        return False

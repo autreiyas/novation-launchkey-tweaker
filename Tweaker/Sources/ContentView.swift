@@ -46,7 +46,9 @@ struct ContentView: View {
                             }
                             knobStrip
                         }
-                        buttonSection
+                        if viewModel.config.enable_shift_buttons == true {
+                            buttonSection
+                        }
                     }
                     .padding(20)
                 }

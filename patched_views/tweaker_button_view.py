@@ -15,27 +15,8 @@ except ImportError:
 
 try:
     import midi
-    PME_System = midi.PME_System
-    GT_Global = midi.GT_Global
-except (ImportError, AttributeError):
-    PME_System = 1 << 2
-    GT_Global = 64
-
-# FL Studio globalTransport command codes
-FPT_Save = 92
-FPT_SaveNew = 93
-FPT_NextWindow = 85
-FPT_Enter = 100
-FPT_Escape = 101
-FPT_TapTempo = 106
-FPT_Metronome = 110
-FPT_LoopRecord = 113
-FPT_Overdub = 112
-FPT_StepEdit = 114
-FPT_CountDown = 60
-FPT_AddMarker = 61
-FPT_Shuffle = 50
-FPT_SnapOnOff = 41
+except Exception:
+    midi = None
 
 
 # Button name -> FunctionToButton key mapping
@@ -66,83 +47,74 @@ SHIFT_BUTTONS = {
 }
 
 
+def _gt(command_name):
+    """Get a globalTransport command constant from the midi module."""
+    if midi is None:
+        return None
+    return getattr(midi, command_name, None)
+
+
+def _run_gt(command_name):
+    """Run a globalTransport command by midi module attribute name."""
+    cmd = _gt(command_name)
+    if cmd is not None:
+        transport.globalTransport(cmd, 1, midi.PME_System)
+    else:
+        print("[Tweaker] midi.%s not found" % command_name)
+
+
 def _execute_action(fl, action_name, params=None):
     """Execute an FL Studio action by name."""
     if action_name == "not_used":
         return
 
-    if action_name == "toggle_pat_song":
-        try:
-            # Use FL Studio's direct API
-            transport.globalTransport(midi.FPT_PatternSong, 1, PME_System)
-        except (NameError, AttributeError):
-            # Fallback: try known command IDs
-            for cmd_id in (20, 17, 15):
-                try:
-                    transport.globalTransport(cmd_id, 1, PME_System)
-                    break
-                except Exception:
-                    continue
+    print("[Tweaker] action: %s" % action_name)
 
-    elif action_name == "tap_tempo":
+    # --- Direct FL wrapper methods (no globalTransport needed) ---
+    if action_name == "tap_tempo":
         fl.send_tap_tempo_event()
-
     elif action_name == "toggle_metronome":
         fl.toggle_metronome()
-
     elif action_name == "toggle_loop_record":
         fl.toggle_loop_record()
-
     elif action_name == "undo":
         fl.undo()
-
     elif action_name == "redo":
         fl.redo()
-
     elif action_name == "open_plugin_picker":
         fl.toggle_plugin_picker()
-
-    elif action_name == "save":
-        transport.globalTransport(FPT_Save, 1, PME_System, GT_Global)
-
-    elif action_name == "save_new":
-        transport.globalTransport(FPT_SaveNew, 1, PME_System, GT_Global)
-
-    elif action_name == "toggle_snap":
-        transport.globalTransport(FPT_SnapOnOff, 1, PME_System, GT_Global)
-
-    elif action_name == "add_marker":
-        transport.globalTransport(FPT_AddMarker, 1, PME_System, GT_Global)
-
-    elif action_name == "toggle_step_edit":
-        transport.globalTransport(FPT_StepEdit, 1, PME_System, GT_Global)
-
-    elif action_name == "toggle_countdown":
-        transport.globalTransport(FPT_CountDown, 1, PME_System, GT_Global)
-
-    elif action_name == "toggle_overdub":
-        transport.globalTransport(FPT_Overdub, 1, PME_System, GT_Global)
-
-    elif action_name == "toggle_shuffle":
-        transport.globalTransport(FPT_Shuffle, 1, PME_System, GT_Global)
-
     elif action_name == "clone_pattern":
         fl.clone_selected_pattern()
-
     elif action_name == "toggle_master_sync":
         fl.enable_master_sync()
-
-    elif action_name == "next_window":
-        transport.globalTransport(FPT_NextWindow, 1, PME_System, GT_Global)
-
     elif action_name == "focus_mixer":
         fl.ui.focus_mixer_window()
-
     elif action_name == "focus_channel_rack":
         fl.ui.focus_channel_window()
-
     elif action_name == "focus_playlist":
         fl.ui.focus_playlist_window()
+
+    # --- globalTransport commands (use midi module constants) ---
+    elif action_name == "toggle_pat_song":
+        transport.setLoopMode()
+    elif action_name == "save":
+        _run_gt("FPT_Save")
+    elif action_name == "save_new":
+        _run_gt("FPT_SaveNew")
+    elif action_name == "toggle_snap":
+        _run_gt("FPT_Snap")
+    elif action_name == "add_marker":
+        _run_gt("FPT_AddMarker")
+    elif action_name == "toggle_step_edit":
+        _run_gt("FPT_StepEdit")
+    elif action_name == "toggle_countdown":
+        _run_gt("FPT_CountDown")
+    elif action_name == "toggle_overdub":
+        _run_gt("FPT_Overdub")
+    elif action_name == "toggle_shuffle":
+        _run_gt("FPT_Shuffle")
+    elif action_name == "next_window":
+        _run_gt("FPT_NextWindow")
 
     elif action_name == "custom_keystroke":
         if params:
@@ -156,6 +128,9 @@ def _execute_action(fl, action_name, params=None):
                         print("[Tweaker] keystroke failed for key=%r mods=%r" % (key, modifiers))
                 except Exception as e:
                     print("[Tweaker] keystroke error: %s" % e)
+
+    else:
+        print("[Tweaker] unknown action: %s" % action_name)
 
 
 class TweakerButtonView(View):
