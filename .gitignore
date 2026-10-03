@@ -13,3 +13,6 @@ Tweaker.app/
 # Python
 __pycache__/
 *.pyc
+
+# Claude Code
+.claude/
