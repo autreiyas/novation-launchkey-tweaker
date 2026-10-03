@@ -33,11 +33,11 @@ struct ContentView: View {
                         VStack(alignment: .leading, spacing: 10) {
                             HStack(spacing: 8) {
                                 Image(systemName: "dial.medium")
-                                    .font(.system(size: 15, weight: .medium))
+                                    .font(.system(size: 17, weight: .medium))
                                     .foregroundStyle(t.accent)
 
                                 Text("Transport Encoders")
-                                    .font(.system(size: 16, weight: .bold))
+                                    .font(.system(size: 18, weight: .bold))
                                     .foregroundStyle(t.text)
 
                                 Text("Knobs 1–8 in transport mode")
@@ -63,27 +63,43 @@ struct ContentView: View {
         .onAppear { viewModel.load() }
     }
 
+    private func openAccessibilitySettings() {
+        NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!)
+    }
+
     // MARK: - Header
 
     private var header: some View {
         HStack(alignment: .center, spacing: 10) {
-            Text("Tweaker")
-                .font(.system(size: 20, weight: .bold, design: .rounded))
+            (Text("LAUNCH").font(.system(size: 20, weight: .bold, design: .rounded))
+             + Text("KEY").font(.system(size: 20, weight: .light, design: .rounded))
+             + Text(" TWEAKER").font(.system(size: 20, weight: .bold, design: .rounded)))
                 .foregroundStyle(t.text)
 
-            Text("Launchkey MK4")
-                .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                .foregroundStyle(t.textMuted)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 3)
-                .background(t.pillBg)
-                .clipShape(Capsule())
-
-            Text("v\(AppVersion.current)")
-                .font(.system(size: 10, weight: .medium, design: .monospaced))
-                .foregroundStyle(t.textMuted.opacity(0.6))
+            Link(destination: URL(string: "https://github.com/autreiyas/novation-launchkey-tweaker")!) {
+                Text("v\(AppVersion.current)")
+                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(t.textMuted)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(t.pillBg)
+                    .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
 
             Spacer()
+
+            // Accessibility settings
+            Button(action: { openAccessibilitySettings() }) {
+                Image(systemName: "hand.raised")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(t.textDim)
+                    .frame(width: 36, height: 32)
+                    .background(t.pillBg)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+            .buttonStyle(.plain)
+            .help("Open Accessibility Settings (required for custom keystrokes)")
 
             // Theme picker
             HStack(spacing: 1) {
@@ -182,11 +198,11 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: 20) {
             HStack(spacing: 8) {
                 Image(systemName: "keyboard")
-                    .font(.system(size: 15, weight: .medium))
+                    .font(.system(size: 17, weight: .medium))
                     .foregroundStyle(t.accent)
 
                 Text("Shift Button Mappings")
-                    .font(.system(size: 16, weight: .bold))
+                    .font(.system(size: 18, weight: .bold))
                     .foregroundStyle(t.text)
 
                 Text("Hold Shift + press a button")
@@ -813,7 +829,7 @@ class ConfigViewModel: ObservableObject {
         suppressPresetChange = true
         selectedPreset = .custom
         suppressPresetChange = false
-        setStatus("Unsaved changes", color: .orange)
+        save()
     }
 
     private func detectPreset() -> PresetChoice {

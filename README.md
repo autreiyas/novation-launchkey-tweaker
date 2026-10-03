@@ -1,82 +1,45 @@
-# Tweaker — Launchkey MK4 Transport Encoder Patch for FL Studio
+# Launchkey Tweaker
 
-The Novation Launchkey MK4's transport mode encoders are painfully slow in FL Studio — even with the keyboard's encoder speed set to "Fast". Tweaker fixes that, lets you remap all 8 transport knobs to any function, and adds configurable shift button mappings for 20+ button combos that Novation left unmapped.
+Custom transport encoder speed patch + shift button remapping for the Novation Launchkey MK4 in FL Studio on macOS.
 
-Includes a native macOS config app with theme support. Changes apply live — no FL Studio restart needed after initial setup.
+The stock Novation scripts ignore how fast you turn transport knobs, leave 20+ shift button combos completely dead, and only map 4 of 8 encoders. Tweaker fixes all of that.
 
-## The Problem
+Includes a native SwiftUI config app. Changes apply live — no FL Studio restart needed after initial setup.
 
-When the Launchkey MK4 is in transport mode, only 4 of 8 encoders are mapped, and the stock Novation scripts **ignore how fast you turn the knob**:
+![Launchkey Tweaker](screenshot.png)
+
+## Features
+
+### Transport Encoders
+
+All 8 transport mode knobs are configurable with velocity-sensitive speed scaling:
 
 | Encoder | Stock Behavior | With Tweaker |
 |---------|---------------|------------|
 | **Knob 1** — Song Position | 1 beat per click, always | Scales with turn speed |
 | **Knob 2** — Zoom | 1 zoom step per click | Scales with turn speed |
-| **Knob 3** — *empty* | Does nothing | Configurable |
-| **Knob 4** — *empty* | Does nothing | Configurable |
+| **Knob 3–4** — *empty* | Does nothing | Configurable |
 | **Knob 5** — Markers | Requires 3 clicks to jump | Instant |
-| **Knob 6** — *empty* | Does nothing | Configurable |
-| **Knob 7** — *empty* | Does nothing | Configurable |
+| **Knob 6–7** — *empty* | Does nothing | Configurable |
 | **Knob 8** — Tempo | ~1 BPM per click | Scales with turn speed |
 
-## Available Knob Functions
+Available knob functions: Song Position, Horizontal/Vertical Zoom, Markers, Tempo, Track Volume/Pan, Channel Volume/Pan, Swing.
 
-Any of the 8 transport encoders can be mapped to any of these:
+### Shift Button Mappings
 
-| Function | Description |
-|----------|-------------|
-| Song Position | Scrub through the song by beats |
-| Horizontal Zoom | Zoom the playlist/piano roll left-right |
-| Vertical Zoom | Zoom the playlist/piano roll up-down |
-| Markers | Jump between arrangement markers |
-| Tempo | Adjust project BPM |
-| Track Volume | Selected mixer track volume |
-| Track Pan | Selected mixer track panning |
-| Channel Volume | Selected channel rack volume |
-| Channel Pan | Selected channel rack panning |
-| Swing | Project swing amount |
-| Not Used | Disabled |
-
-## Shift Button Mappings
-
-The stock Novation scripts leave 20+ shift button combos completely dead — pressing Shift + Play/Record/Loop/etc does nothing. Tweaker intercepts these and lets you map them to FL Studio functions.
-
-### Available Shift Buttons
+20+ shift button combos that Novation left unmapped, now configurable:
 
 | Group | Buttons |
 |-------|---------|
-| **Transport** | Stop, Play, Record, Loop, Capture MIDI, Quantise, Metronome, Undo (stock: Redo) |
+| **Transport** | Stop, Play, Record, Loop, Capture MIDI, Quantise, Metronome |
 | **Fader Select** | Faders 1–8, Arm/Select |
-| **Navigation** | Track ◀/▶ (stock: Prev/Next Track), Pads ▲/▼, Encoder ▲/▼ |
+| **Navigation** | Pads ▲/▼, Encoder ▲/▼ |
 
-### Available Button Functions
-
-| Function | Description |
-|----------|-------------|
-| Toggle Pat/Song | Switch between pattern and song mode |
-| Tap Tempo | Tap tempo input |
-| Toggle Metronome | Metronome on/off |
-| Toggle Loop Record | Loop recording on/off |
-| Undo / Redo | Undo or redo last action |
-| Save / Save New | Save project or save as new version |
-| Toggle Snap | Snap to grid on/off |
-| Add Marker | Add arrangement marker at current position |
-| Toggle Step Edit | Step editing mode |
-| Toggle Countdown | Pre-count before recording |
-| Toggle Overdub | Overdub recording mode |
-| Toggle Shuffle | Shuffle/swing mode |
-| Clone Pattern | Duplicate the selected pattern |
-| Toggle Master Sync | Master sync on/off |
-| Next Window | Cycle through FL Studio windows |
-| Focus Mixer / Channel Rack / Playlist | Bring specific window to front |
-| Open Plugin Picker | Open the plugin browser |
-| Custom Keystroke | Send any key combo (e.g. ⌘⇧V) via macOS accessibility |
+Available actions: Toggle Pat/Song, Tap Tempo, Toggle Metronome, Toggle Loop Record, Undo, Redo, Save, Save New, Toggle Snap, Add Marker, Toggle Step Edit, Toggle Countdown, Toggle Overdub, Toggle Shuffle, Clone Pattern, Toggle Master Sync, Next Window, Focus Mixer/Channel Rack/Playlist, Open Plugin Picker, or any Custom Keystroke via macOS accessibility.
 
 ## Installation
 
 ```bash
-cd launchkey_mk4321
-
 chmod +x install.sh restore.sh
 
 # Install the patch (backs up originals automatically)
@@ -87,28 +50,24 @@ chmod +x install.sh restore.sh
 
 ## Tweaker App
 
-After installing, open the native config app to remap knobs and adjust speeds:
+Build and open the config app:
 
 ```bash
-./Tweaker.app
+cd Tweaker
+swift build -c release
+cp .build/arm64-apple-macosx/release/Tweaker ../Tweaker.app/Contents/MacOS/Tweaker
+open ../Tweaker.app
 ```
 
-Or build it from source:
+Or just open `Tweaker.app` if already built.
 
-```bash
-cd Tweaker && swift build -c release
-```
+The app has two sections:
+- **Transport Encoders** — knob function assignment with speed/sensitivity sliders
+- **Shift Button Mappings** — button cards laid out matching hardware positions with function picker popovers and custom keystroke support
 
-The app shows:
-- **Transport Encoders** — all 8 knobs with function assignment dropdowns and speed sliders
-- **Shift Button Mappings** — transport, fader select, and navigation buttons laid out matching hardware positions, with function picker popovers and custom keystroke support
+Themes: Midnight, Arctic, FL Studio, System.
 
-Four themes are included: Midnight, Arctic, FL Studio, and System.
-
-Three encoder presets are included:
-- **Stock** — original Novation behavior
-- **Fast** — all knobs mapped, 3-4x faster
-- **Turbo** — all knobs mapped, 6-8x faster
+Encoder presets: Stock, Fast (3–4x), Turbo (6–8x).
 
 ## Restoring Originals
 
@@ -117,46 +76,9 @@ Three encoder presets are included:
 # Restart FL Studio
 ```
 
-Backups are stored in `~/Documents/Image-Line/FL Studio/Settings/Hardware/Novation_backup_originals/`.
+## Notes
 
-## Important Notes
-
-- **Novation Components updates** may overwrite patched files. Re-run `./install.sh` after updates.
-- **FL Studio updates** may also replace scripts. Same fix — re-run `./install.sh`.
+- **Novation Components** or **FL Studio updates** may overwrite patched files — re-run `./install.sh`.
 - Only transport mode encoders are affected. Mixer, plugin, and sends modes are untouched.
-- Works with all MK4 sizes (25/37/49/61/88) — they share the same scripts.
-
-## Files
-
-### Patched (backed up before modification)
-
-```
-script/device_independent/view/transport_song_position_view.py
-script/device_independent/view/transport_zoom_view.py
-script/device_independent/view/transport_marker_view.py
-script/device_independent/view/transport_tempo_view.py
-script/device_dependent/LaunchkeyMk4Range/transport_encoder_layout_manager.py
-script/product_defs/launchkey_mk4_product_defs.py
-script/action_generators/surface_action_generator/launchkey_mk4_surface_action_generator.py
-script/device_dependent/LaunchkeyMk4/application.py
-```
-
-### Added
-
-```
-transport_speed_config.py          # Config loader (hot-reload from JSON)
-tweaker_config.json                # Your settings (edited by Tweaker app)
-patched_views/                     # Custom modules
-    transport_vertical_zoom_view.py
-    transport_track_volume_view.py
-    transport_track_pan_view.py
-    transport_channel_volume_view.py
-    transport_channel_pan_view.py
-    transport_swing_view.py
-    tweaker_button_view.py         # Shift button handler
-    keystroke_sender.py            # macOS keystroke simulation via CGEvents
-    launchkey_mk4_product_defs.py  # Patched product defs (adds shifted buttons)
-    launchkey_mk4_surface_action_generator.py  # Patched action generator
-    application.py                 # Patched app (registers button view)
-Tweaker/                           # Native SwiftUI config app
-```
+- Works with all MK4 sizes (25/37/49/61/88).
+- Custom Keystroke requires macOS Accessibility permissions for FL Studio.

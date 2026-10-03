@@ -13,17 +13,18 @@ except ImportError:
     ui = None
 
 
+try:
+    import midi
+    PME_System = midi.PME_System
+    GT_Global = midi.GT_Global
+except (ImportError, AttributeError):
+    PME_System = 1 << 2
+    GT_Global = 64
+
 # FL Studio globalTransport command codes
-FPT_PatSongMode = 17
 FPT_Save = 92
 FPT_SaveNew = 93
-FPT_Cut = 80
-FPT_Copy = 81
-FPT_Paste = 82
-FPT_Insert = 83
-FPT_Delete = 84
 FPT_NextWindow = 85
-FPT_WindowJog = 86
 FPT_Enter = 100
 FPT_Escape = 101
 FPT_TapTempo = 106
@@ -35,14 +36,6 @@ FPT_CountDown = 60
 FPT_AddMarker = 61
 FPT_Shuffle = 50
 FPT_SnapOnOff = 41
-
-try:
-    import midi
-    PME_System = midi.PME_System
-    GT_Global = midi.GT_Global
-except (ImportError, AttributeError):
-    PME_System = 1 << 2
-    GT_Global = 64
 
 
 # Button name -> FunctionToButton key mapping
@@ -79,7 +72,17 @@ def _execute_action(fl, action_name, params=None):
         return
 
     if action_name == "toggle_pat_song":
-        transport.globalTransport(FPT_PatSongMode, 1, PME_System, GT_Global)
+        try:
+            # Use FL Studio's direct API
+            transport.globalTransport(midi.FPT_PatternSong, 1, PME_System)
+        except (NameError, AttributeError):
+            # Fallback: try known command IDs
+            for cmd_id in (20, 17, 15):
+                try:
+                    transport.globalTransport(cmd_id, 1, PME_System)
+                    break
+                except Exception:
+                    continue
 
     elif action_name == "tap_tempo":
         fl.send_tap_tempo_event()
@@ -148,9 +151,11 @@ def _execute_action(fl, action_name, params=None):
             if key:
                 try:
                     from patched_views.keystroke_sender import send_keystroke
-                    send_keystroke(key, modifiers)
-                except Exception:
-                    pass
+                    result = send_keystroke(key, modifiers)
+                    if not result:
+                        print("[Tweaker] keystroke failed for key=%r mods=%r" % (key, modifiers))
+                except Exception as e:
+                    print("[Tweaker] keystroke error: %s" % e)
 
 
 class TweakerButtonView(View):

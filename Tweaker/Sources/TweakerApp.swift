@@ -5,7 +5,7 @@ struct TweakerApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     var body: some Scene {
-        WindowGroup {
+        WindowGroup("Launchkey Tweaker") {
             ContentView()
                 .frame(minWidth: 380, minHeight: 420)
         }

@@ -102,8 +102,8 @@ def send_keystroke(key, modifiers=None):
             flag = MODIFIER_FLAGS.get(mod.lower(), 0)
             flags |= flag
 
-    # kCGEventSourceStateHIDSystemState = 1
-    source = _cg.CGEventSourceCreate(1)
+    # kCGEventSourceStateCombinedSessionState = 0
+    source = _cg.CGEventSourceCreate(0)
     if not source:
         return False
 
@@ -112,14 +112,15 @@ def send_keystroke(key, modifiers=None):
         event_down = _cg.CGEventCreateKeyboardEvent(source, key_code, True)
         if flags:
             _cg.CGEventSetFlags(event_down, flags)
-        _cg.CGEventPost(0, event_down)  # kCGHIDEventTap
+        # kCGSessionEventTap = 1 (targets current session/app)
+        _cg.CGEventPost(1, event_down)
         _cf.CFRelease(event_down)
 
         # Key up
         event_up = _cg.CGEventCreateKeyboardEvent(source, key_code, False)
         if flags:
             _cg.CGEventSetFlags(event_up, flags)
-        _cg.CGEventPost(0, event_up)
+        _cg.CGEventPost(1, event_up)
         _cf.CFRelease(event_up)
     finally:
         _cf.CFRelease(source)
