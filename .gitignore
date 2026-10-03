@@ -7,8 +7,8 @@ Tweaker/.swiftpm/
 *.swp
 *~
 
-# App bundle (built artifact — rebuild with swift build)
-Tweaker.app/
+# App bundle build artifacts (the .app itself is committed for convenience)
+Tweaker.app/Contents/MacOS/Tweaker.dSYM
 
 # Python
 __pycache__/

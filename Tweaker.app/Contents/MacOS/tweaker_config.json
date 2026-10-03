@@ -1,0 +1,116 @@
+{
+  "buttons" : {
+    "shift_arm_select" : {
+      "function" : "custom_keystroke",
+      "params" : {
+        "key" : "l"
+      }
+    },
+    "shift_capture_midi" : {
+      "function" : "not_used"
+    },
+    "shift_encoder_page_down" : {
+      "function" : "not_used"
+    },
+    "shift_encoder_page_up" : {
+      "function" : "not_used"
+    },
+    "shift_fader_1" : {
+      "function" : "not_used"
+    },
+    "shift_fader_2" : {
+      "function" : "not_used"
+    },
+    "shift_fader_3" : {
+      "function" : "not_used"
+    },
+    "shift_fader_4" : {
+      "function" : "not_used"
+    },
+    "shift_fader_5" : {
+      "function" : "not_used"
+    },
+    "shift_fader_6" : {
+      "function" : "not_used"
+    },
+    "shift_fader_7" : {
+      "function" : "not_used"
+    },
+    "shift_fader_8" : {
+      "function" : "not_used"
+    },
+    "shift_loop" : {
+      "function" : "not_used"
+    },
+    "shift_metronome" : {
+      "function" : "toggle_pat_song"
+    },
+    "shift_pads_page_down" : {
+      "function" : "not_used"
+    },
+    "shift_pads_page_up" : {
+      "function" : "not_used"
+    },
+    "shift_play" : {
+      "function" : "custom_keystroke",
+      "params" : {
+        "key" : "r",
+        "modifiers" : [
+          "cmd",
+          "shift"
+        ]
+      }
+    },
+    "shift_quantise" : {
+      "function" : "not_used"
+    },
+    "shift_record" : {
+      "function" : "not_used"
+    },
+    "shift_stop" : {
+      "function" : "not_used"
+    }
+  },
+  "channel_pan" : {
+    "sensitivity" : 1.5
+  },
+  "channel_volume" : {
+    "sensitivity" : 1.5
+  },
+  "enable_custom_keystrokes" : true,
+  "enable_shift_buttons" : true,
+  "horizontal_zoom" : {
+    "steps_multiplier" : 3
+  },
+  "knobs" : {
+    "0" : "song_position",
+    "1" : "horizontal_zoom",
+    "2" : "not_used",
+    "3" : "not_used",
+    "4" : "markers",
+    "5" : "not_used",
+    "6" : "not_used",
+    "7" : "tempo"
+  },
+  "markers" : {
+    "damper_threshold" : 1
+  },
+  "song_position" : {
+    "beats_multiplier" : 4
+  },
+  "swing" : {
+    "sensitivity" : 50
+  },
+  "tempo" : {
+    "sensitivity_multiplier" : 75
+  },
+  "track_pan" : {
+    "sensitivity" : 1.5
+  },
+  "track_volume" : {
+    "sensitivity" : 1.5
+  },
+  "vertical_zoom" : {
+    "steps_multiplier" : 3
+  }
+}
