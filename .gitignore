@@ -1,0 +1,15 @@
+# Swift build
+Tweaker/.build/
+Tweaker/.swiftpm/
+
+# macOS
+.DS_Store
+*.swp
+*~
+
+# App bundle (built artifact — rebuild with swift build)
+Tweaker.app/
+
+# Python
+__pycache__/
+*.pyc
