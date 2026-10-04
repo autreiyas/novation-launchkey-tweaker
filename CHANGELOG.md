@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.0.9
+
+### Added
+- Sensitivity slider for encoder keystroke mode — controls how many clicks before a keystroke fires (1–10, default 3)
+- Open Config button in header bar — opens the saved `tweaker_config.json` in your default editor
+- Button keystroke key picker now uses a dropdown instead of a text field — Space, Enter, Return, and arrow keys are now selectable
+
+### Fixed
+- Encoder keystrokes config was not being saved to the JSON file (missing serialization)
+
+## 1.0.8
+
+### Added
+- Encoder keystroke mode — send configurable keystrokes on encoder turns (e.g., arrow left/right for navigation)
+- Each encoder can be set to "Keystroke" with separate clockwise and counter-clockwise key + modifier bindings
+- Encoder turns repeat the keystroke proportionally to turn speed
+
 ## 1.0.7
 
 ### Added

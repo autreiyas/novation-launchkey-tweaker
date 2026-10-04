@@ -91,6 +91,18 @@ struct ContentView: View {
 
             Spacer()
 
+            // Open config file
+            Button(action: { NSWorkspace.shared.open(ConfigFile.flStudioPath) }) {
+                Image(systemName: "doc.text")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(t.textDim)
+                    .frame(width: 36, height: 32)
+                    .background(t.pillBg)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+            .buttonStyle(.plain)
+            .help("Open saved config (tweaker_config.json)")
+
             // Accessibility settings
             Button(action: { openAccessibilitySettings() }) {
                 Image(systemName: "hand.raised")
@@ -308,6 +320,10 @@ struct KnobCard: View {
     var large: Bool = true
     @State private var showingPicker = false
     @State private var isHovered = false
+    @State private var cwKey = ""
+    @State private var ccwKey = ""
+    @State private var cwMods: Set<String> = []
+    @State private var ccwMods: Set<String> = []
 
     private var function: KnobFunction {
         viewModel.config.knobFunction(at: index)
@@ -353,8 +369,11 @@ struct KnobCard: View {
                 functionPicker
             }
 
-            // Parameter control
-            if let label = function.paramLabel {
+            // Parameter control or keystroke editor
+            if function == .encoderKeystroke {
+                encoderKeystrokeEditor
+                    .padding(.bottom, 4)
+            } else if let label = function.paramLabel {
                 parameterSlider(label: label)
                     .padding(.bottom, 4)
             } else {
@@ -429,6 +448,68 @@ struct KnobCard: View {
                 .offset(y: large ? 4 : 3)
         }
         .animation(.easeInOut(duration: 0.3), value: isHovered)
+    }
+
+    // MARK: - Encoder keystroke editor
+
+    private var encoderKeystrokeEditor: some View {
+        VStack(spacing: 6) {
+            keystrokeField(label: "CW", key: $cwKey, mods: $ccwMods, direction: "cw")
+            keystrokeField(label: "CCW", key: $ccwKey, mods: $ccwMods, direction: "ccw")
+        }
+        .onAppear { loadEncoderKeystroke() }
+    }
+
+    private static let availableKeys = keystrokeAvailableKeys
+
+    private func keystrokeField(label: String, key: Binding<String>, mods: Binding<Set<String>>, direction: String) -> some View {
+        HStack(spacing: 4) {
+            Text(label)
+                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                .foregroundStyle(t.textMuted)
+                .frame(width: 28, alignment: .leading)
+
+            Picker("", selection: key) {
+                ForEach(Self.availableKeys, id: \.0) { value, display in
+                    Text(display).tag(value)
+                }
+            }
+            .frame(width: 80)
+            .onChange(of: key.wrappedValue) { _ in saveEncoderKeystroke() }
+
+            ForEach(["cmd", "shift", "alt", "ctrl"], id: \.self) { mod in
+                Toggle(mod, isOn: Binding(
+                    get: { mods.wrappedValue.contains(mod) },
+                    set: { on in
+                        if on { mods.wrappedValue.insert(mod) }
+                        else { mods.wrappedValue.remove(mod) }
+                        saveEncoderKeystroke()
+                    }
+                ))
+                .toggleStyle(.button)
+                .font(.system(size: 8, weight: .medium))
+                .controlSize(.mini)
+            }
+        }
+    }
+
+    private func loadEncoderKeystroke() {
+        let ks = viewModel.config.encoderKeystroke(at: index)
+        cwKey = ks.cw_key
+        ccwKey = ks.ccw_key
+        cwMods = Set(ks.cw_modifiers ?? [])
+        ccwMods = Set(ks.ccw_modifiers ?? [])
+    }
+
+    private func saveEncoderKeystroke() {
+        let mapping = TweakerConfig.EncoderKeystrokeMapping(
+            cw_key: cwKey,
+            cw_modifiers: cwMods.isEmpty ? nil : Array(cwMods),
+            ccw_key: ccwKey,
+            ccw_modifiers: ccwMods.isEmpty ? nil : Array(ccwMods)
+        )
+        viewModel.config.setEncoderKeystroke(mapping, at: index)
+        viewModel.markDirty()
     }
 
     // MARK: - Function picker popover
@@ -663,8 +744,13 @@ struct ButtonMappingCard: View {
 
                 Spacer()
 
-                KeystrokeField(key: $keystrokeKey, t: t, onCommit: saveKeystroke)
-                    .frame(width: 40, height: 24)
+                Picker("", selection: $keystrokeKey) {
+                    ForEach(keystrokeAvailableKeys, id: \.0) { value, display in
+                        Text(display).tag(value)
+                    }
+                }
+                .frame(width: 90)
+                .onChange(of: keystrokeKey) { _ in saveKeystroke() }
             }
         }
     }
@@ -761,50 +847,37 @@ struct ButtonMappingCard: View {
     }
 }
 
-// MARK: - Keystroke capture field
+// MARK: - Available keystroke keys
 
-struct KeystrokeField: NSViewRepresentable {
-    @Binding var key: String
-    let t: ThemeColors
-    var onCommit: () -> Void
-
-    func makeNSView(context: Context) -> NSTextField {
-        let field = NSTextField()
-        field.isEditable = true
-        field.isBordered = true
-        field.bezelStyle = .roundedBezel
-        field.alignment = .center
-        field.font = NSFont.monospacedSystemFont(ofSize: 12, weight: .bold)
-        field.stringValue = key.uppercased()
-        field.delegate = context.coordinator
-        field.focusRingType = .none
-        return field
+private let keystrokeAvailableKeys: [(String, String)] = {
+    var keys: [(String, String)] = [
+        ("", "None"),
+        ("right", "Right →"),
+        ("left", "Left ←"),
+        ("up", "Up ↑"),
+        ("down", "Down ↓"),
+        ("tab", "Tab"),
+        ("space", "Space"),
+        ("enter", "Enter"),
+        ("return", "Return"),
+        ("delete", "Delete"),
+        ("escape", "Esc"),
+        ("pageup", "Page Up"),
+        ("pagedown", "Page Down"),
+        ("home", "Home"),
+        ("end", "End"),
+    ]
+    for c in "abcdefghijklmnopqrstuvwxyz" {
+        keys.append((String(c), String(c).uppercased()))
     }
-
-    func updateNSView(_ nsView: NSTextField, context: Context) {
-        nsView.stringValue = key.uppercased()
+    for c in "0123456789" {
+        keys.append((String(c), String(c)))
     }
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator(self)
+    for i in 1...12 {
+        keys.append(("f\(i)", "F\(i)"))
     }
-
-    class Coordinator: NSObject, NSTextFieldDelegate {
-        let parent: KeystrokeField
-        init(_ parent: KeystrokeField) { self.parent = parent }
-
-        func controlTextDidEndEditing(_ obj: Notification) {
-            guard let field = obj.object as? NSTextField else { return }
-            let text = field.stringValue.lowercased().trimmingCharacters(in: .whitespaces)
-            if text.count <= 3 || ["f1","f2","f3","f4","f5","f6","f7","f8","f9","f10","f11","f12",
-                                    "up","down","left","right","space","tab","enter","esc","delete",
-                                    "home","end","pageup","pagedown"].contains(text) {
-                parent.key = text
-                parent.onCommit()
-            }
-        }
-    }
-}
+    return keys
+}()
 
 // MARK: - NSVisualEffectView wrapper
 

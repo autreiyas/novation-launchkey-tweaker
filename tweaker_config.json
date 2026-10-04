@@ -46,6 +46,8 @@
     "swing": {
         "sensitivity": 50
     },
+    "encoder_keystrokes": {
+    },
     "buttons": {
         "shift_metronome": {"function": "toggle_pat_song"},
         "shift_play": {"function": "not_used"},

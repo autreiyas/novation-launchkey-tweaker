@@ -1,6 +1,6 @@
 # Custom Keystrokes
 
-Tweaker can send arbitrary keyboard shortcuts from shift button presses on the Launchkey MK4. This enables actions that have no FL Studio API equivalent, like **Cmd+Shift+R** to export as MP3.
+Tweaker can send arbitrary keyboard shortcuts from both **shift button presses** and **encoder turns** on the Launchkey MK4. This enables actions that have no FL Studio API equivalent, like **Cmd+Shift+R** to export as MP3, or **arrow left/right** to navigate with an encoder.
 
 ## How It Works
 
@@ -70,10 +70,17 @@ The keystroke server needs macOS Accessibility permission to send keystrokes:
 
 ### 3. Configure in Tweaker App
 
+**For shift buttons:**
 1. Open **Tweaker.app**
 2. Set `enable_custom_keystrokes` to **true** (if not already)
 3. Assign a button to **Custom Keystroke**
 4. Set the key and modifiers
+
+**For encoders:**
+1. Set any transport encoder to **Keystroke**
+2. Set the **CW** (clockwise) and **CCW** (counter-clockwise) keys and modifiers
+3. Adjust the **Sensitivity** slider (1–10) — higher values require more clicks before a keystroke fires, reducing accidental triggers
+4. Faster turns still send more keystrokes, scaled by the sensitivity setting
 
 ### 4. Restart FL Studio
 

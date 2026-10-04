@@ -1,13 +1,17 @@
 {
   "buttons" : {
     "shift_arm_select" : {
-      "function" : "custom_keystroke",
-      "params" : {
-        "key" : "l"
-      }
+      "function" : "not_used"
     },
     "shift_capture_midi" : {
-      "function" : "not_used"
+      "function" : "custom_keystroke",
+      "params" : {
+        "key" : "r",
+        "modifiers" : [
+          "cmd",
+          "shift"
+        ]
+      }
     },
     "shift_encoder_page_down" : {
       "function" : "not_used"
@@ -40,35 +44,34 @@
       "function" : "not_used"
     },
     "shift_loop" : {
-      "function" : "not_used"
+      "function" : "f2"
     },
     "shift_metronome" : {
-      "function" : "toggle_pat_song"
+      "function" : "tap_tempo"
     },
     "shift_pads_page_down" : {
-      "function" : "not_used"
-    },
-    "shift_pads_page_up" : {
-      "function" : "not_used"
-    },
-    "shift_play" : {
       "function" : "custom_keystroke",
       "params" : {
-        "key" : "r",
-        "modifiers" : [
-          "cmd",
-          "shift"
-        ]
+        "key" : "enter"
       }
+    },
+    "shift_pads_page_up" : {
+      "function" : "custom_keystroke",
+      "params" : {
+        "key" : "escape"
+      }
+    },
+    "shift_play" : {
+      "function" : "toggle_pat_song"
     },
     "shift_quantise" : {
       "function" : "not_used"
     },
     "shift_record" : {
-      "function" : "not_used"
+      "function" : "toggle_countdown"
     },
     "shift_stop" : {
-      "function" : "not_used"
+      "function" : "toggle_pat_song"
     }
   },
   "channel_pan" : {
@@ -79,17 +82,27 @@
   },
   "enable_custom_keystrokes" : true,
   "enable_shift_buttons" : true,
+  "encoder_keystrokes" : {
+    "5" : {
+      "ccw_key" : "left",
+      "cw_key" : "right"
+    },
+    "6" : {
+      "ccw_key" : "up",
+      "cw_key" : "down"
+    }
+  },
   "horizontal_zoom" : {
     "steps_multiplier" : 3
   },
   "knobs" : {
     "0" : "song_position",
     "1" : "horizontal_zoom",
-    "2" : "not_used",
-    "3" : "not_used",
+    "2" : "vertical_zoom",
+    "3" : "markers",
     "4" : "markers",
-    "5" : "not_used",
-    "6" : "not_used",
+    "5" : "encoder_keystroke",
+    "6" : "encoder_keystroke",
     "7" : "tempo"
   },
   "markers" : {

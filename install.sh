@@ -47,6 +47,7 @@ CUSTOM_VIEWS=(
     "transport_swing_view.py"
     "tweaker_button_view.py"
     "keystroke_sender.py"
+    "transport_encoder_keystroke_view.py"
 )
 
 echo "=== Tweaker — Launchkey MK4 Patch ==="

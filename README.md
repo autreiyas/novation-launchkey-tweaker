@@ -23,7 +23,7 @@ All 8 transport mode knobs are configurable with velocity-sensitive speed scalin
 | **Knob 6–7** — *empty* | Does nothing | Configurable |
 | **Knob 8** — Tempo | ~1 BPM per click | Scales with turn speed |
 
-Available knob functions: Song Position, Horizontal/Vertical Zoom, Markers, Tempo, Track Volume/Pan, Channel Volume/Pan, Swing.
+Available knob functions: Song Position, Horizontal/Vertical Zoom, Markers, Tempo, Track Volume/Pan, Channel Volume/Pan, Swing, Keystroke (send configurable key combos on CW/CCW turns).
 
 ### Shift Button Mappings
 

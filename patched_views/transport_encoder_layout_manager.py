@@ -28,11 +28,12 @@ from patched_views.transport_track_pan_view import TransportTrackPanView
 from patched_views.transport_channel_volume_view import TransportChannelVolumeView
 from patched_views.transport_channel_pan_view import TransportChannelPanView
 from patched_views.transport_swing_view import TransportSwingView
+from patched_views.transport_encoder_keystroke_view import TransportEncoderKeystrokeView
 
 from transport_speed_config import get_knob_function
 
 
-def _create_views_for_function(func_name, action_dispatcher, fl, screen_writer, product_defs, control_index):
+def _create_views_for_function(func_name, action_dispatcher, fl, screen_writer, product_defs, control_index, knob_index=0):
     """Return a list of views for a given function name and control index."""
 
     if func_name == "song_position":
@@ -83,6 +84,10 @@ def _create_views_for_function(func_name, action_dispatcher, fl, screen_writer, 
         return [
             TransportSwingView(action_dispatcher, fl, control_index=control_index),
         ]
+    elif func_name == "encoder_keystroke":
+        return [
+            TransportEncoderKeystrokeView(action_dispatcher, fl, control_index=control_index, knob_index=knob_index),
+        ]
     else:
         # not_used
         return [
@@ -105,7 +110,7 @@ class TransportEncoderLayoutManager:
             control_index = encoders[knob_index]
             self.views.extend(
                 _create_views_for_function(
-                    func_name, action_dispatcher, fl, screen_writer, product_defs, control_index
+                    func_name, action_dispatcher, fl, screen_writer, product_defs, control_index, knob_index
                 )
             )
 
