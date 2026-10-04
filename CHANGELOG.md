@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.1.0
+
+### Added
+- Device-style layout — encoders, pads, and buttons arranged to mirror the physical Launchkey MK4
+- Decorative 2x8 pad grid below encoders with grayscale gradient
+- Navigation buttons (Pads up/down, Enc up/down) placed inline beside the encoder+pad column
+- Nav buttons have hover highlighting and accent borders to indicate they are configurable
+- Inspector panel side (left/right) persists across app sessions via AppStorage
+- Transport button divider line between secondary and primary control blocks
+
+### Changed
+- Replaced dual classic/panel layout with single device-style layout
+- Transport buttons (Stop, Loop, Play, Record) are now icon-only, matching the device
+- Secondary transport buttons (Capture, Undo, Quantise, Metronome) are text-only, matching the device
+- Pad nav buttons use single chevrons, matching encoder nav buttons
+- Removed layout toggle buttons (compact/large/panel open) from header — simplified to panel side toggle only
+- Transport column title label removed for cleaner layout
+
 ## 1.0.9
 
 ### Added

@@ -7,6 +7,9 @@ Tweaker/.swiftpm/
 *.swp
 *~
 
+# Images
+*.webp
+
 # App bundle build artifacts (the .app itself is committed for convenience)
 Tweaker.app/Contents/MacOS/Tweaker.dSYM
 

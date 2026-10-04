@@ -8,8 +8,8 @@
       "params" : {
         "key" : "r",
         "modifiers" : [
-          "cmd",
-          "shift"
+          "shift",
+          "cmd"
         ]
       }
     },
@@ -65,13 +65,13 @@
       "function" : "toggle_pat_song"
     },
     "shift_quantise" : {
-      "function" : "not_used"
+      "function" : "save"
     },
     "shift_record" : {
       "function" : "toggle_countdown"
     },
     "shift_stop" : {
-      "function" : "toggle_pat_song"
+      "function" : "toggle_browser"
     }
   },
   "channel_pan" : {
@@ -85,11 +85,13 @@
   "encoder_keystrokes" : {
     "5" : {
       "ccw_key" : "left",
-      "cw_key" : "right"
+      "cw_key" : "right",
+      "sensitivity" : 4
     },
     "6" : {
       "ccw_key" : "up",
-      "cw_key" : "down"
+      "cw_key" : "down",
+      "sensitivity" : 1
     }
   },
   "horizontal_zoom" : {

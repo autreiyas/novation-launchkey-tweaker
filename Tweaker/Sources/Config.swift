@@ -311,6 +311,7 @@ struct ShiftButton: Identifiable {
     let icon: String
     let isStock: Bool  // true = already mapped by stock firmware (shown disabled)
     let stockFunction: String?
+    var iconOnly: Bool = false
     var id: String { configKey }
 }
 
@@ -320,31 +321,27 @@ struct ShiftButtonGroup: Identifiable {
     let buttons: [ShiftButton]
     var id: String { name }
 
-    // Transport buttons: 2 rows × 4, matching hardware layout
+    // Transport buttons: 2 columns × 4 rows (two 2×2 blocks stacked)
     static let transport = ShiftButtonGroup(name: "Transport", icon: "play.rectangle", buttons: [
-        // Row 1: Stop, Loop, Capture, Undo
-        ShiftButton(configKey: "shift_stop", displayName: "Shift + Stop", shortName: "Stop", icon: "stop.fill", isStock: false, stockFunction: nil),
-        ShiftButton(configKey: "shift_loop", displayName: "Shift + Loop", shortName: "Loop", icon: "arrow.triangle.2.circlepath", isStock: false, stockFunction: nil),
-        ShiftButton(configKey: "shift_capture_midi", displayName: "Shift + Capture", shortName: "Capture", icon: "pianokeys", isStock: false, stockFunction: nil),
-        ShiftButton(configKey: "_stock_undo", displayName: "Shift + Undo", shortName: "Undo", icon: "arrow.uturn.backward", isStock: true, stockFunction: "Redo"),
-        // Row 2: Play, Record, Quantise, Metronome
-        ShiftButton(configKey: "shift_play", displayName: "Shift + Play", shortName: "Play", icon: "play.fill", isStock: false, stockFunction: nil),
-        ShiftButton(configKey: "shift_record", displayName: "Shift + Record", shortName: "Record", icon: "record.circle", isStock: false, stockFunction: nil),
-        ShiftButton(configKey: "shift_quantise", displayName: "Shift + Quantise", shortName: "Quantise", icon: "square.grid.3x3", isStock: false, stockFunction: nil),
-        ShiftButton(configKey: "shift_metronome", displayName: "Shift + Metronome", shortName: "Metronome", icon: "metronome", isStock: false, stockFunction: nil),
+        // Block 1: secondary controls (text only, like the device)
+        ShiftButton(configKey: "shift_capture_midi", displayName: "Shift + Capture", shortName: "Capture", icon: "", isStock: false, stockFunction: nil),
+        ShiftButton(configKey: "_stock_undo", displayName: "Shift + Undo", shortName: "Undo", icon: "", isStock: true, stockFunction: "Redo"),
+        ShiftButton(configKey: "shift_quantise", displayName: "Shift + Quantise", shortName: "Quantise", icon: "", isStock: false, stockFunction: nil),
+        ShiftButton(configKey: "shift_metronome", displayName: "Shift + Metronome", shortName: "Metronome", icon: "", isStock: false, stockFunction: nil),
+        // Block 2: primary controls (icon only, like the device)
+        ShiftButton(configKey: "shift_stop", displayName: "Shift + Stop", shortName: "Stop", icon: "stop.fill", isStock: false, stockFunction: nil, iconOnly: true),
+        ShiftButton(configKey: "shift_loop", displayName: "Shift + Loop", shortName: "Loop", icon: "arrow.triangle.2.circlepath", isStock: false, stockFunction: nil, iconOnly: true),
+        ShiftButton(configKey: "shift_play", displayName: "Shift + Play", shortName: "Play", icon: "play.fill", isStock: false, stockFunction: nil, iconOnly: true),
+        ShiftButton(configKey: "shift_record", displayName: "Shift + Record", shortName: "Record", icon: "record.circle", isStock: false, stockFunction: nil, iconOnly: true),
     ])
 
-    // Navigation buttons — stacked up/down pairs: Track (stock), Pads, Enc
+    // Navigation buttons — stacked up/down pairs: Pads, Enc
     static let navigation = ShiftButtonGroup(name: "Navigation", icon: "arrow.left.arrow.right", buttons: [
-        // Column 1: Track (stock)
-        ShiftButton(configKey: "_stock_track_left", displayName: "Shift + Track \u{25C0}", shortName: "Track \u{25C0}", icon: "chevron.left", isStock: true, stockFunction: "Prev Track"),
-        // Column 2: Pads
-        ShiftButton(configKey: "shift_pads_page_up", displayName: "Shift + Pads \u{25B2}", shortName: "Pads \u{25B2}", icon: "chevron.up.2", isStock: false, stockFunction: nil),
-        // Column 3: Encoder
+        // Row 1: Pads up, Encoder up
+        ShiftButton(configKey: "shift_pads_page_up", displayName: "Shift + Pads \u{25B2}", shortName: "Pads \u{25B2}", icon: "chevron.up", isStock: false, stockFunction: nil),
         ShiftButton(configKey: "shift_encoder_page_up", displayName: "Shift + Enc \u{25B2}", shortName: "Enc \u{25B2}", icon: "chevron.up", isStock: false, stockFunction: nil),
-        // Row 2
-        ShiftButton(configKey: "_stock_track_right", displayName: "Shift + Track \u{25B6}", shortName: "Track \u{25B6}", icon: "chevron.right", isStock: true, stockFunction: "Next Track"),
-        ShiftButton(configKey: "shift_pads_page_down", displayName: "Shift + Pads \u{25BC}", shortName: "Pads \u{25BC}", icon: "chevron.down.2", isStock: false, stockFunction: nil),
+        // Row 2: Pads down, Encoder down
+        ShiftButton(configKey: "shift_pads_page_down", displayName: "Shift + Pads \u{25BC}", shortName: "Pads \u{25BC}", icon: "chevron.down", isStock: false, stockFunction: nil),
         ShiftButton(configKey: "shift_encoder_page_down", displayName: "Shift + Enc \u{25BC}", shortName: "Enc \u{25BC}", icon: "chevron.down", isStock: false, stockFunction: nil),
     ])
 
