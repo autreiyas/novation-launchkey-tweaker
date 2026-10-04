@@ -324,6 +324,7 @@ struct KnobCard: View {
     @State private var ccwKey = ""
     @State private var cwMods: Set<String> = []
     @State private var ccwMods: Set<String> = []
+    @State private var keystrokeSensitivity: Double = 3
 
     private var function: KnobFunction {
         viewModel.config.knobFunction(at: index)
@@ -372,6 +373,7 @@ struct KnobCard: View {
             // Parameter control or keystroke editor
             if function == .encoderKeystroke {
                 encoderKeystrokeEditor
+                encoderSensitivitySlider
                     .padding(.bottom, 4)
             } else if let label = function.paramLabel {
                 parameterSlider(label: label)
@@ -499,6 +501,7 @@ struct KnobCard: View {
         ccwKey = ks.ccw_key
         cwMods = Set(ks.cw_modifiers ?? [])
         ccwMods = Set(ks.ccw_modifiers ?? [])
+        keystrokeSensitivity = Double(ks.sensitivity ?? 3)
     }
 
     private func saveEncoderKeystroke() {
@@ -506,10 +509,63 @@ struct KnobCard: View {
             cw_key: cwKey,
             cw_modifiers: cwMods.isEmpty ? nil : Array(cwMods),
             ccw_key: ccwKey,
-            ccw_modifiers: ccwMods.isEmpty ? nil : Array(ccwMods)
+            ccw_modifiers: ccwMods.isEmpty ? nil : Array(ccwMods),
+            sensitivity: Int(keystrokeSensitivity)
         )
         viewModel.config.setEncoderKeystroke(mapping, at: index)
         viewModel.markDirty()
+    }
+
+    private var encoderSensitivitySlider: some View {
+        VStack(spacing: 6) {
+            HStack {
+                Text("Sensitivity (clicks per keystroke)")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(t.textDim)
+                Spacer()
+                Text("\(Int(keystrokeSensitivity))")
+                    .font(.system(size: 14, weight: .bold, design: .monospaced))
+                    .foregroundStyle(t.accent)
+            }
+
+            GeometryReader { geo in
+                let range: ClosedRange<Double> = 1...10
+                let pct = (keystrokeSensitivity - range.lowerBound) / (range.upperBound - range.lowerBound)
+
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(t.sliderTrack)
+                        .frame(height: 5)
+
+                    Capsule()
+                        .fill(
+                            LinearGradient(
+                                colors: [t.sliderFill.opacity(0.3), t.sliderFill.opacity(0.7)],
+                                startPoint: .leading, endPoint: .trailing
+                            )
+                        )
+                        .frame(width: max(5, geo.size.width * pct), height: 5)
+
+                    Circle()
+                        .fill(t.accent)
+                        .frame(width: 14, height: 14)
+                        .shadow(color: t.accent.opacity(0.4), radius: 5)
+                        .offset(x: (geo.size.width - 14) * pct)
+                }
+                .frame(height: 18)
+                .contentShape(Rectangle())
+                .gesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { drag in
+                            let pct = max(0, min(1, drag.location.x / geo.size.width))
+                            let raw = range.lowerBound + pct * (range.upperBound - range.lowerBound)
+                            keystrokeSensitivity = raw.rounded()
+                            saveEncoderKeystroke()
+                        }
+                )
+            }
+            .frame(height: 18)
+        }
     }
 
     // MARK: - Function picker popover

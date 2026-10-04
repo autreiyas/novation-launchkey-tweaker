@@ -38,7 +38,7 @@ enum KnobFunction: String, CaseIterable, Identifiable, Codable {
     var paramLabel: String? {
         switch self {
         case .notUsed: return nil
-        case .encoderKeystroke: return "Sensitivity (clicks per keystroke)"
+        case .encoderKeystroke: return nil
         case .markers: return "Sensitivity (clicks to jump)"
         default: return "Speed"
         }
@@ -53,7 +53,7 @@ enum KnobFunction: String, CaseIterable, Identifiable, Codable {
         case .trackVolume, .trackPan, .channelVolume, .channelPan: return "sensitivity"
         case .swing: return "sensitivity"
         case .notUsed: return ""
-        case .encoderKeystroke: return "sensitivity"
+        case .encoderKeystroke: return ""
         }
     }
 
@@ -66,7 +66,7 @@ enum KnobFunction: String, CaseIterable, Identifiable, Codable {
         case .trackVolume, .trackPan, .channelVolume, .channelPan: return 0.5...5.0
         case .swing: return 10...200
         case .notUsed: return 0...1
-        case .encoderKeystroke: return 1...10
+        case .encoderKeystroke: return 0...1
         }
     }
 
@@ -79,7 +79,7 @@ enum KnobFunction: String, CaseIterable, Identifiable, Codable {
         case .trackVolume, .trackPan, .channelVolume, .channelPan: return 1.5
         case .swing: return 50
         case .notUsed: return 0
-        case .encoderKeystroke: return 3
+        case .encoderKeystroke: return 0
         }
     }
 
@@ -411,7 +411,6 @@ struct TweakerConfig: Codable {
     var channel_volume: ParamSet?
     var channel_pan: ParamSet?
     var swing: ParamSet?
-    var encoder_keystroke: ParamSet?
     var buttons: [String: ButtonMapping]?
     var encoder_keystrokes: [String: EncoderKeystrokeMapping]?
 
@@ -420,6 +419,7 @@ struct TweakerConfig: Codable {
         var cw_modifiers: [String]?
         var ccw_key: String
         var ccw_modifiers: [String]?
+        var sensitivity: Int?
     }
 
     struct ParamSet: Codable {
@@ -477,8 +477,7 @@ struct TweakerConfig: Codable {
         case .channelVolume: return channel_volume
         case .channelPan: return channel_pan
         case .swing: return swing
-        case .encoderKeystroke: return encoder_keystroke
-        case .notUsed: return nil
+        case .notUsed, .encoderKeystroke: return nil
         }
     }
 
@@ -494,13 +493,12 @@ struct TweakerConfig: Codable {
         case .channelVolume: channel_volume = params
         case .channelPan: channel_pan = params
         case .swing: swing = params
-        case .encoderKeystroke: encoder_keystroke = params
-        case .notUsed: break
+        case .notUsed, .encoderKeystroke: break
         }
     }
 
     func encoderKeystroke(at index: Int) -> EncoderKeystrokeMapping {
-        return encoder_keystrokes?["\(index)"] ?? EncoderKeystrokeMapping(cw_key: "", ccw_key: "")
+        return encoder_keystrokes?["\(index)"] ?? EncoderKeystrokeMapping(cw_key: "", ccw_key: "", sensitivity: 3)
     }
 
     mutating func setEncoderKeystroke(_ mapping: EncoderKeystrokeMapping, at index: Int) {
@@ -638,7 +636,6 @@ struct ConfigFile {
             ("channel_volume", config.channel_volume),
             ("channel_pan", config.channel_pan),
             ("swing", config.swing),
-            ("encoder_keystroke", config.encoder_keystroke),
         ]
         for (key, params) in knobFunctions {
             if let p = params {
@@ -672,6 +669,7 @@ struct ConfigFile {
                 ]
                 if let m = mapping.cw_modifiers, !m.isEmpty { entry["cw_modifiers"] = m }
                 if let m = mapping.ccw_modifiers, !m.isEmpty { entry["ccw_modifiers"] = m }
+                entry["sensitivity"] = mapping.sensitivity ?? 3
                 ekDict[key] = entry
             }
             dict["encoder_keystrokes"] = ekDict

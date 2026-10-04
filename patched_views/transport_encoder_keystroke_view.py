@@ -5,7 +5,7 @@
 #
 import os
 from script.device_independent.util_view.view import View
-from transport_speed_config import get_config, get_function_param
+from transport_speed_config import get_config
 
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 _PARENT_DIR = os.path.dirname(_SCRIPT_DIR)
@@ -68,7 +68,7 @@ class TransportEncoderKeystrokeView(View):
             mods = cfg.get("ccw_modifiers", [])
 
         if key:
-            sensitivity = int(get_function_param("encoder_keystroke", "sensitivity", 3))
+            sensitivity = int(cfg.get("sensitivity", 3))
             repeat_count = max(1, abs(action.value) // sensitivity)
             for _ in range(repeat_count):
                 _queue_keystroke(key, mods)
