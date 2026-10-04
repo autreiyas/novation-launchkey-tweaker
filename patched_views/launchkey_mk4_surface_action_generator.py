@@ -16,6 +16,20 @@ from script.action_generators.surface_action_generator.surface_actions import (
     FaderLayoutChangedAction,
     PadLayoutChangedAction,
 )
+from transport_speed_config import get_config
+from patched_views.tweaker_scale_view import observe_midi_event
+
+
+def _log_midi_event(fl_event):
+    """Tweaker: print one incoming MIDI message to FL's script output."""
+    status = fl_event.status
+    if status == 0xF0:
+        print("[Tweaker MIDI] sysex %s" % " ".join("%02X" % b for b in (fl_event.sysex or b"")))
+        return
+    print(
+        "[Tweaker MIDI] status=0x%02X (ch%d) data1=%d (0x%02X) data2=%d"
+        % (status, (status & 0x0F) + 1, fl_event.data1, fl_event.data1, fl_event.data2)
+    )
 
 
 class LaunchkeyMk4SurfaceActionGenerator:
@@ -94,6 +108,11 @@ class LaunchkeyMk4SurfaceActionGenerator:
         ]
 
     def handle_midi_event(self, fl_event):
+        # Tweaker: raw MIDI logging (debug.log_midi)
+        if get_config().get("debug", {}).get("log_midi"):
+            _log_midi_event(fl_event)
+        # Tweaker: track the keyboard's scale (CH7 CC 61/62/74)
+        observe_midi_event(fl_event)
         for action_generator in self.common_action_generators:
             if actions := action_generator.handle_midi_event(fl_event):
                 return actions

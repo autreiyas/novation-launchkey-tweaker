@@ -46,6 +46,7 @@ CUSTOM_VIEWS=(
     "transport_channel_pan_view.py"
     "transport_swing_view.py"
     "tweaker_button_view.py"
+    "tweaker_scale_view.py"
     "keystroke_sender.py"
     "transport_encoder_keystroke_view.py"
 )
@@ -193,14 +194,22 @@ if [ "$KEYSTROKES_ENABLED" = "True" ]; then
 
     # Install binary (only if changed, to preserve Accessibility trust)
     if [ -f "$SERVER_BIN" ]; then
+        # The installed binary is re-signed, so compare against an unsigned copy of
+        # what was last installed instead of the installed binary itself.
+        SERVER_SRC_COPY="$TWEAKER_DIR/.tweaker_keystroke_server.unsigned"
+        if [ -f "$TWEAKER_DIR/tweaker_keystroke_server" ] && [ ! -f "$SERVER_SRC_COPY" ]; then
+            # Existing install from before this check: assume it matches, keep its trust.
+            cp "$SERVER_BIN" "$SERVER_SRC_COPY"
+        fi
         NEEDS_INSTALL=false
         if [ ! -f "$TWEAKER_DIR/tweaker_keystroke_server" ]; then
             NEEDS_INSTALL=true
-        elif ! cmp -s "$SERVER_BIN" "$TWEAKER_DIR/tweaker_keystroke_server"; then
+        elif ! cmp -s "$SERVER_BIN" "$SERVER_SRC_COPY"; then
             NEEDS_INSTALL=true
         fi
 
         if [ "$NEEDS_INSTALL" = true ]; then
+            cp "$SERVER_BIN" "$SERVER_SRC_COPY"
             cp "$SERVER_BIN" "$TWEAKER_DIR/tweaker_keystroke_server"
             chmod +x "$TWEAKER_DIR/tweaker_keystroke_server"
             codesign -s - -f "$TWEAKER_DIR/tweaker_keystroke_server" 2>/dev/null

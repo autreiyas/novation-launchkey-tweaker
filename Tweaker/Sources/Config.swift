@@ -172,6 +172,7 @@ enum ButtonFunction: String, CaseIterable, Identifiable, Codable {
     case save = "save"
     case saveNew = "save_new"
     case toggleMasterSync = "toggle_master_sync"
+    case showScale = "show_scale"
     case customKeystroke = "custom_keystroke"
 
     var id: String { rawValue }
@@ -192,7 +193,7 @@ enum ButtonFunction: String, CaseIterable, Identifiable, Codable {
             return .windows
         case .addMarker:
             return .navigation
-        case .save, .saveNew, .toggleMasterSync, .customKeystroke:
+        case .save, .saveNew, .toggleMasterSync, .showScale, .customKeystroke:
             return .other
         }
     }
@@ -246,6 +247,7 @@ enum ButtonFunction: String, CaseIterable, Identifiable, Codable {
         case .save: return "Save"
         case .saveNew: return "Save As"
         case .toggleMasterSync: return "Master Sync"
+        case .showScale: return "Show Scale"
         case .customKeystroke: return "Custom Keystroke"
         }
     }
@@ -299,6 +301,7 @@ enum ButtonFunction: String, CaseIterable, Identifiable, Codable {
         case .save: return "square.and.arrow.down"
         case .saveNew: return "square.and.arrow.down.on.square"
         case .toggleMasterSync: return "link"
+        case .showScale: return "music.quarternote.3"
         case .customKeystroke: return "keyboard"
         }
     }
@@ -616,7 +619,12 @@ struct ConfigFile {
         // Build the JSON dict manually to match the Python config format:
         // buttons entries need {"function": "...", "params": {"key": "...", "modifiers": [...]}}
         // for custom_keystroke, but just {"function": "..."} for others.
+        // Start from the existing file so keys the app doesn't model (e.g. "debug") survive a save.
         var dict: [String: Any] = [:]
+        if let data = try? Data(contentsOf: flStudioPath),
+           let existing = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+            dict = existing
+        }
         dict["enable_shift_buttons"] = config.enable_shift_buttons ?? false
         dict["enable_custom_keystrokes"] = config.enable_custom_keystrokes ?? false
         dict["knobs"] = config.knobs
@@ -670,6 +678,8 @@ struct ConfigFile {
                 ekDict[key] = entry
             }
             dict["encoder_keystrokes"] = ekDict
+        } else {
+            dict.removeValue(forKey: "encoder_keystrokes")
         }
 
         let data = try JSONSerialization.data(withJSONObject: dict, options: [.prettyPrinted, .sortedKeys])

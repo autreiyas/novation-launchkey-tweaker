@@ -36,6 +36,15 @@ Available knob functions: Song Position, Horizontal/Vertical Zoom, Markers, Temp
 
 Available actions include native FL Studio API calls (Toggle Pat/Song, Save, Undo, Redo, Copy, Cut, Paste, F1–F12, etc.) and custom keystrokes for anything else (like Cmd+Shift+R to export as MP3).
 
+### Scale Sync
+
+FL Studio can't set piano roll scale highlighting from a script, so Tweaker makes matching it quick:
+
+- FL's hint bar shows the Launchkey's scale whenever you change it (e.g. "Launchkey scale: F Minor")
+- Tweaker's Scale panel shows the scale's notes on a keyboard, plus the exact FL menu path to set it
+- Pick a root and any of the MK4's 30 scales in Tweaker to set the keyboard from your Mac
+- Map "Show Scale" to a shift button to bring the scale back up in FL
+
 ### Custom Keystrokes
 
 Send any macOS keyboard shortcut from a shift button press — including combos like Cmd+Shift+R to export. A background keystroke server handles delivery via macOS CGEvents. See [docs/custom-keystrokes.md](docs/custom-keystrokes.md) for technical details.

@@ -58,6 +58,7 @@ private let keystrokeAvailableKeys: [(String, String)] = {
 struct ContentView: View {
     @StateObject private var viewModel = ConfigViewModel()
     @StateObject private var theme = ThemeProvider()
+    @StateObject private var scaleModel = ScaleSyncModel()
     @AppStorage("largeCards") private var largeCards = true
     @AppStorage("panelSideRight") private var panelSideRight = true
     private var panelSide: PanelSide { panelSideRight ? .right : .left }
@@ -238,6 +239,8 @@ struct ContentView: View {
                             buttonGroupSection(ShiftButtonGroup.transport)
                         }
                     }
+
+                    ScaleSection(model: scaleModel, t: t)
                 }
                 .padding(20)
             }

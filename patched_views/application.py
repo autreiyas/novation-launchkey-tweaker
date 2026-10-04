@@ -37,6 +37,7 @@ from util.command_dispatcher import CommandDispatcher
 
 # Tweaker: import custom button view
 from patched_views.tweaker_button_view import TweakerButtonView
+from patched_views.tweaker_scale_view import TweakerScaleView
 
 
 class Application:
@@ -91,6 +92,8 @@ class Application:
             ShowHighlightsView(self.action_dispatcher, self.product_defs, self.model),
             # Tweaker: shifted button handler
             TweakerButtonView(self.action_dispatcher, self.fl, self.product_defs),
+            # Tweaker: scale sync with the Tweaker app
+            TweakerScaleView(self.action_dispatcher),
         }
         for view in self.global_views:
             view.show()

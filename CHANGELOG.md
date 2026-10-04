@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.1.1
+
+### Added
+- Scale sync with the Launchkey's Scale mode (FL Studio has no API to set piano roll scale highlighting, so Tweaker mirrors it instead)
+  - FL's hint bar shows the keyboard's scale whenever it changes (e.g. "Launchkey scale: F Minor")
+  - New Scale panel in Tweaker: current scale, its notes, a one-octave keyboard, and the FL menu path to match it
+  - Root, scale (all 30 MK4 scales) and Scale mode controls in Tweaker set the keyboard directly
+- "Show Scale" shift button action — shows the current scale in FL's hint bar
+- `debug.log_midi` flag — prints every incoming MIDI message to FL's script output
+
+### Fixed
+- Saving in Tweaker dropped config keys the app doesn't manage (e.g. the `debug` section)
+- `install.sh` reinstalled the keystroke server on every run, breaking its Accessibility permission
+
 ## 1.1.0
 
 ### Added

@@ -180,6 +180,10 @@ def _execute_action(fl, action_name, params=None):
     elif action_name == "toggle_wait_for_input":
         _run_gt("FPT_WaitForInput")
 
+    elif action_name == "show_scale":
+        from patched_views.tweaker_scale_view import show_scale_hint
+        show_scale_hint()
+
     elif action_name == "custom_keystroke":
         if params:
             key = params.get("key", "")

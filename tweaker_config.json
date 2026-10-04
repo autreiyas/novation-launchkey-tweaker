@@ -3,6 +3,7 @@
     "enable_custom_keystrokes": true,
     "debug": {
         "log_actions": true,
+        "log_midi": false,
         "dump_midi_constants": false,
         "dump_api_methods": false
     },
