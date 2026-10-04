@@ -237,7 +237,7 @@ struct ContentView: View {
                 }
             }()
 
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: columns), spacing: 8) {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 18), count: columns), spacing: 18) {
                 ForEach(group.buttons) { btn in
                     ButtonMappingCard(button: btn, viewModel: viewModel, t: t)
                 }
@@ -252,10 +252,12 @@ struct ContentView: View {
             Circle()
                 .fill(viewModel.statusColor)
                 .frame(width: 7, height: 7)
+                .opacity(viewModel.statusVisible ? 1 : 0)
 
             Text(viewModel.statusText)
                 .font(.system(size: 12))
                 .foregroundStyle(t.textDim)
+                .opacity(viewModel.statusVisible ? 1 : 0)
 
             Spacer()
 
@@ -305,6 +307,7 @@ struct KnobCard: View {
     let t: ThemeColors
     var large: Bool = true
     @State private var showingPicker = false
+    @State private var isHovered = false
 
     private var function: KnobFunction {
         viewModel.config.knobFunction(at: index)
@@ -372,8 +375,13 @@ struct KnobCard: View {
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(isActive ? t.cardBorderActive : t.cardBorder, lineWidth: 1)
+                .stroke(isHovered ? t.accent.opacity(0.6) : (isActive ? t.cardBorderActive : t.cardBorder), lineWidth: isHovered ? 1.5 : 1)
         )
+        .scaleEffect(isHovered ? 1.03 : 1.0)
+        .shadow(color: isHovered ? t.accent.opacity(0.15) : .clear, radius: 8, y: 2)
+        .onHover { hovering in
+            withAnimation(.easeOut(duration: 0.15)) { isHovered = hovering }
+        }
     }
 
     // MARK: - Encoder knob visual (larger)
@@ -407,12 +415,12 @@ struct KnobCard: View {
                 .frame(width: knobSize, height: knobSize)
                 .shadow(color: .black.opacity(t.isDark ? 0.5 : 0.15), radius: 5, y: 3)
 
-            // Indicator notch
+            // Indicator notch (rotates on hover)
             Capsule()
                 .fill(isActive ? t.accent : t.textMuted)
                 .frame(width: 3, height: notchHeight)
                 .offset(y: notchOffset)
-                .rotationEffect(.degrees(-45))
+                .rotationEffect(.degrees(isHovered ? 0 : -45))
 
             // Function icon inside knob
             Image(systemName: function.icon)
@@ -420,6 +428,7 @@ struct KnobCard: View {
                 .foregroundStyle(isActive ? t.accent.opacity(0.5) : t.textMuted.opacity(0.3))
                 .offset(y: large ? 4 : 3)
         }
+        .animation(.easeInOut(duration: 0.3), value: isHovered)
     }
 
     // MARK: - Function picker popover
@@ -533,6 +542,7 @@ struct ButtonMappingCard: View {
     @State private var showingPicker = false
     @State private var keystrokeKey = ""
     @State private var keystrokeMods: Set<String> = []
+    @State private var isHovered = false
 
     private var currentFunction: ButtonFunction {
         button.isStock ? .notUsed : viewModel.config.buttonFunction(for: button.configKey)
@@ -548,14 +558,14 @@ struct ButtonMappingCard: View {
     }
 
     var body: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: 8) {
             // Button icon + short name
             Image(systemName: button.icon)
-                .font(.system(size: 14, weight: .medium))
+                .font(.system(size: 20, weight: .medium))
                 .foregroundStyle(iconColor)
 
             Text(button.shortName)
-                .font(.system(size: 10, weight: .semibold))
+                .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(button.isStock ? t.textMuted.opacity(0.5) : t.text)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
@@ -564,25 +574,25 @@ struct ButtonMappingCard: View {
             if button.isStock {
                 // Stock-mapped button — show as disabled
                 Text(button.stockFunction ?? "Stock")
-                    .font(.system(size: 10, weight: .medium))
+                    .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(t.textMuted.opacity(0.4))
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
                     .frame(maxWidth: .infinity)
                     .background(t.pillBg.opacity(0.5))
-                    .clipShape(RoundedRectangle(cornerRadius: 5))
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
             } else {
                 Button(action: { showingPicker.toggle() }) {
                     Text(currentFunction.displayName)
-                        .font(.system(size: 10, weight: .medium))
+                        .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(isActive ? t.text : t.textDim)
                         .lineLimit(1)
                         .minimumScaleFactor(0.6)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
                         .frame(maxWidth: .infinity)
                         .background(t.pillBg)
-                        .clipShape(RoundedRectangle(cornerRadius: 5))
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
                 }
                 .buttonStyle(.plain)
                 .popover(isPresented: $showingPicker, arrowEdge: .bottom) {
@@ -595,8 +605,8 @@ struct ButtonMappingCard: View {
                 keystrokeEditor
             }
         }
-        .padding(8)
-        .frame(maxWidth: .infinity, minHeight: 70, alignment: .top)
+        .padding(10)
+        .frame(maxWidth: .infinity, minHeight: 85, alignment: .top)
         .opacity(button.isStock ? 0.5 : 1.0)
         .background(
             RoundedRectangle(cornerRadius: 8, style: .continuous)
@@ -604,8 +614,17 @@ struct ButtonMappingCard: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .stroke(button.isStock ? t.cardBorder.opacity(0.5) : (isActive ? t.cardBorderActive : t.cardBorder), lineWidth: 1)
+                .stroke(
+                    button.isStock ? t.cardBorder.opacity(0.5) :
+                    (isHovered ? t.accent.opacity(0.6) : (isActive ? t.cardBorderActive : t.cardBorder)),
+                    lineWidth: isHovered && !button.isStock ? 1.5 : 1
+                )
         )
+        .scaleEffect(isHovered && !button.isStock ? 1.05 : 1.0)
+        .shadow(color: isHovered && !button.isStock ? t.accent.opacity(0.15) : .clear, radius: 6, y: 2)
+        .onHover { hovering in
+            withAnimation(.easeOut(duration: 0.15)) { isHovered = hovering }
+        }
         .onAppear {
             guard !button.isStock else { return }
             let ks = viewModel.config.buttonKeystroke(for: button.configKey)
@@ -813,11 +832,15 @@ enum PresetChoice: String, CaseIterable {
 // MARK: - View model
 
 class ConfigViewModel: ObservableObject {
+    static let statusFadeDuration: TimeInterval = 4
+
     @Published var config = TweakerConfig.fast
     @Published var statusText = ""
     @Published var statusColor: Color = .gray
+    @Published var statusVisible = true
     @Published var selectedPreset: PresetChoice = .fast
     private var suppressPresetChange = false
+    private var statusFadeTask: DispatchWorkItem?
 
     func load() {
         config = ConfigFile.load()
@@ -869,7 +892,17 @@ class ConfigViewModel: ObservableObject {
     }
 
     private func setStatus(_ text: String, color: Color) {
+        statusFadeTask?.cancel()
         statusText = text
         statusColor = color
+        withAnimation(.easeIn(duration: 0.15)) { statusVisible = true }
+
+        let task = DispatchWorkItem { [weak self] in
+            withAnimation(.easeOut(duration: 0.5)) {
+                self?.statusVisible = false
+            }
+        }
+        statusFadeTask = task
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.statusFadeDuration, execute: task)
     }
 }

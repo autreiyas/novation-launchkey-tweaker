@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.7
+
+### Added
+- Hover effects on encoder and button cards (scale, accent border glow)
+- Encoder knob notch rotates 45 degrees on hover
+- Status bar notifications fade out after 4 seconds
+
+### Changed
+- Button card icons enlarged (14pt → 20pt), labels (10pt → 13pt), function text (10pt → 12pt)
+- Button grid spacing increased (8pt → 18pt) to accommodate hover scaling
+
 ## 1.0.6
 
 ### Fixed
